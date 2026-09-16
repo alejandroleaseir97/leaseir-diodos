@@ -1,4 +1,4 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8">
+<!doctype html><html lang="es" data-theme="light"><head><meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Control de Diodos · Leaseir</title>
@@ -7,7 +7,7 @@
 :root{--gr:#EFF1EE;--su:#FAFBF9;--s2:#F2F4F1;--ink:#161A17;--i2:#3D453C;--mu:#5D655C;
 --fa:#8A9289;--li:#D5DAD3;--l2:#E4E8E2;--ac:#00695E;--as:#DCEDEA;
 --r1:#FBEDE2;--r2:#F5D6BB;--r3:#EAB289;--r4:#D07F45;--r5:#A94E22;--c1:#00998A;--c3:#C05621}
-@media(prefers-color-scheme:dark){:root{--gr:#111411;--su:#1A1E1A;--s2:#20251F;--ink:#E7EBE5;
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--gr:#111411;--su:#1A1E1A;--s2:#20251F;--ink:#E7EBE5;
 --i2:#C3CAC0;--mu:#98A196;--fa:#727B71;--li:#2E332D;--l2:#262B26;--ac:#3FB5A5;--as:#16302C;
 --r1:#2A1E15;--r2:#432C1B;--r3:#6B4224;--r4:#9C5F2E;--r5:#C8823F;--c1:#22A091;--c3:#CC6A34}}
 *{box-sizing:border-box}
@@ -74,7 +74,7 @@ font-size:13px;color:var(--mu)}
 
 /* una pantalla, tarjetas redondeadas y sombra suave (16-09-2026) */
 :root{--sh:0 1px 2px rgba(20,26,20,.06),0 8px 24px -12px rgba(20,26,20,.18)}
-@media(prefers-color-scheme:dark){:root{--sh:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--sh:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}}
 html,body{height:100%;overflow:hidden}
 body{display:flex;flex-direction:column}
 header{margin-bottom:0;flex:0 0 auto}
@@ -96,15 +96,15 @@ border:1px solid var(--li);background:var(--su);color:var(--mu);border-radius:99
 .mn .fe b{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
 #v-portada{gap:14px}
 .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex:0 0 auto}
-.kp{background:#fff;border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
+.kp{background:var(--su);border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
 padding:16px 18px 14px;display:flex;flex-direction:column;gap:2px}
-@media(prefers-color-scheme:dark){.kp,.pc{background:#242A23}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .kp,:root:not([data-theme="light"]) .pc{background:#242A23}}
 .kp .e{font:500 12px "IBM Plex Sans",sans-serif;color:var(--mu)}
 .kp .b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
 font-size:38px;line-height:1.05;font-weight:500;letter-spacing:-.02em}
 .kp .p{font:500 11.5px "IBM Plex Mono",monospace;color:var(--mu);margin-top:6px}
 .pb{display:grid;grid-template-columns:1.55fr 1fr;gap:14px;flex:1 1 auto;min-height:0}
-.pc{background:#fff;border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
+.pc{background:var(--su);border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
 padding:14px 18px 16px;display:flex;flex-direction:column;min-height:0}
 .pc h3{font:600 14px "IBM Plex Sans Condensed",sans-serif;margin:0}
 .pc .nt{font-size:11.5px;color:var(--fa);margin:1px 0 10px}
