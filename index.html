@@ -71,6 +71,59 @@ padding:15px;background:var(--su)}
 .q span{font-size:13px;color:var(--i2);display:block;margin-top:4px}
 footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--li);
 font-size:13px;color:var(--mu)}
+
+/* una pantalla, tarjetas redondeadas y sombra suave (16-09-2026) */
+:root{--sh:0 1px 2px rgba(20,26,20,.06),0 8px 24px -12px rgba(20,26,20,.18)}
+@media(prefers-color-scheme:dark){:root{--sh:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}}
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+header{margin-bottom:0;flex:0 0 auto}
+header .w{padding-top:16px;padding-bottom:12px}
+h1{font-size:26px}
+header .sub{display:none}
+#lz{flex:1 1 auto;min-height:0;overflow:hidden;display:flex}
+#lz>.w{width:100%;padding-bottom:18px;display:flex;flex-direction:column;min-height:0}
+section{display:none;margin:0}
+section.on{display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
+section.on>.sc,section.on>.q{flex:1 1 auto;min-height:0;overflow:auto}
+footer{display:none}
+.mn{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0 14px;flex:0 0 auto}
+.mn button{font:500 13px "IBM Plex Sans",sans-serif;padding:7px 13px;cursor:pointer;
+border:1px solid var(--li);background:var(--su);color:var(--mu);border-radius:999px}
+.mn button:hover{color:var(--ink);border-color:var(--mu)}
+.mn button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.mn .fe{margin-left:auto;display:flex;align-items:center;gap:7px;font:500 12px "IBM Plex Sans",sans-serif;color:var(--mu)}
+.mn .fe b{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
+#v-portada{gap:14px}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex:0 0 auto}
+.kp{background:#fff;border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
+padding:16px 18px 14px;display:flex;flex-direction:column;gap:2px}
+@media(prefers-color-scheme:dark){.kp,.pc{background:#242A23}}
+.kp .e{font:500 12px "IBM Plex Sans",sans-serif;color:var(--mu)}
+.kp .b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+font-size:38px;line-height:1.05;font-weight:500;letter-spacing:-.02em}
+.kp .p{font:500 11.5px "IBM Plex Mono",monospace;color:var(--mu);margin-top:6px}
+.pb{display:grid;grid-template-columns:1.55fr 1fr;gap:14px;flex:1 1 auto;min-height:0}
+.pc{background:#fff;border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
+padding:14px 18px 16px;display:flex;flex-direction:column;min-height:0}
+.pc h3{font:600 14px "IBM Plex Sans Condensed",sans-serif;margin:0}
+.pc .nt{font-size:11.5px;color:var(--fa);margin:1px 0 10px}
+.pc .cu{flex:1 1 auto;min-height:0;overflow:auto}
+.ms{display:flex;align-items:stretch;gap:5px;height:100%;min-height:120px}
+.ms .m{flex:1 1 0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ms .m .z{flex:1 1 auto;min-height:0;display:flex;align-items:flex-end}
+.ms .m b{width:100%;border-radius:3px 3px 0 0;background:var(--c1);display:block;min-height:2px}
+.ms .m s{text-decoration:none;text-align:center;font:500 10px "IBM Plex Mono",monospace;color:var(--fa)}
+.rk{display:flex;flex-direction:column;gap:7px}
+.rk .f{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.rk .nm{font-size:12.5px;color:var(--i2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .vl{font:500 12px "IBM Plex Mono",monospace;color:var(--ink)}
+.rk .ba{grid-column:1/-1;height:5px;border-radius:3px;background:var(--s2);overflow:hidden}
+.rk .ba i{display:block;height:100%;background:var(--c1);border-radius:3px}
+.t,.q div,.sc{border-radius:14px}
+.t,.q div{box-shadow:var(--sh);border-color:var(--l2)}
+@media(max-width:980px){html,body{overflow:auto;height:auto}
+.pg{grid-template-columns:repeat(2,1fr)}.pb{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="w">
 <p class="eb">Leaseir Technologies · SAT y fabricación</p>
@@ -78,15 +131,25 @@ font-size:13px;color:var(--mu)}
 <p class="sub">Resumen del parque, de los diodos comprados y de lo que no cuadra.
 El detalle equipo a equipo, con la fila de origen de cada dato, va en la versión completa.</p>
 <div id="ch"></div></div></header>
-<div class="w">
-<section><div class="sh"><h2>El parque, en cuatro cifras</h2></div><div class="tiles" id="k"></div></section>
-<section><div class="sh"><h2>Dónde están los diodos comprados</h2><span id="nd"></span></div>
+<div id="lz"><div class="w">
+<nav class="mn" id="mn"></nav>
+<section id="v-portada">
+  <div class="pg" id="pk"></div>
+  <div class="pb">
+    <div class="pc"><h3>Cambios de diodo por año</h3><p class="nt">pincha para ver el detalle del año</p>
+      <div class="cu"><div class="ms" id="pm"></div></div></div>
+    <div class="pc"><h3>Quién los está gastando</h3><p class="nt">cambios acumulados por cliente</p>
+      <div class="cu"><div class="rk" id="pc2"></div></div></div>
+  </div>
+</section>
+<section id="v-parque"><div class="sh"><h2>El parque, en cuatro cifras</h2></div><div class="tiles" id="k"></div></section>
+<section id="v-censo"><div class="sh"><h2>Dónde están los diodos comprados</h2><span id="nd"></span></div>
 <div class="track" id="ts"></div><div class="lg" id="ls"></div></section>
-<section><div class="sh"><h2>Averías por añada</h2>
+<section id="v-anadas"><div class="sh"><h2>Averías por añada</h2>
 <span>fila = año de salida · columna = año del cambio</span></div>
 <div class="selc"><label for="fc">Cliente</label><select id="fc"></select><span id="fcn"></span></div>
 <div class="sc" id="mz"></div><div class="rampa" id="rp"></div></section>
-<section><div class="sh"><h2>La añada del diodo</h2>
+<section id="v-diodo"><div class="sh"><h2>La añada del diodo</h2>
 <span>fila = cuándo se compró el diodo · columna = cuándo se sustituyó</span></div>
 <div class="selc"><label for="fd">Cliente</label><select id="fd"></select>
 <label for="fg" style="margin-left:8px">Detalle</label><select id="fg">
@@ -96,15 +159,15 @@ El detalle equipo a equipo, con la fila de origen de cada dato, va en la versió
 mejor porque han tenido menos tiempo de romperse, no porque el diodo sea mejor: uno de 2019 lleva
 siete años expuesto y uno de 2026 unos meses. Roto = otro diodo entró en su lugar en la misma
 pieza de mano.</p></section>
-<section><div class="sh"><h2>Cambios de diodo por año</h2><span id="nc"></span></div>
+<section id="v-cambios"><div class="sh"><h2>Cambios de diodo por año</h2><span id="nc"></span></div>
 <div class="bv" id="bv"></div><div class="bars" id="bb"></div><div class="bx" id="bx"></div></section>
-<section><div class="sh"><h2>Quién pagó cada cambio</h2><span id="ncb"></span></div>
+<section id="v-cobro"><div class="sh"><h2>Quién pagó cada cambio</h2><span id="ncb"></span></div>
 <div class="track" id="tc" style="height:52px"></div><div class="lg" id="lc"></div></section>
-<section><div class="sh"><h2>Parque por cliente</h2><span>equipos en cliente y cambios acumulados · nombres en el panel interno</span></div>
+<section id="v-clientes"><div class="sh"><h2>Parque por cliente</h2><span>equipos en cliente y cambios acumulados · nombres en el panel interno</span></div>
 <div class="sc"><table><thead><tr><th class="l">Cliente</th><th>Equipos</th><th>Cambios</th>
 <th>Por equipo</th></tr></thead><tbody id="tc2"></tbody></table></div></section>
-<section><div class="sh"><h2>Lo que no cuadra</h2><span>y por qué</span></div><div class="q" id="q"></div></section>
-<footer id="ft"></footer></div>
+<section id="v-calidad"><div class="sh"><h2>Lo que no cuadra</h2><span>y por qué</span></div><div class="q" id="q"></div></section>
+<footer id="ft"></footer></div></div>
 <script>
 var D={"kpi": {"equipos": 3729,"en_parque": 3622,"diodos": 4553,"cambios": 751,"con_diodo": 3393,"sin_diodo": 336,"tickets_diodo": 160,"sin_trazar": 96,"typos_resueltos": 69,"typos_revisar": 76,"typos_nocompra": 75,"duplicados": 57,"fechas_raras": 210,"solo_ventas": 98,"solo_consola": 555,"renumeraciones": 60,"prefijos_reasignados": 868},"sit": {"Montado de fábrica": 3259,"Montado como recambio": 721,"En stock o sin destino": 322,"Asignado a cliente, sin pieza de mano": 221,"De baja / KO": 30},"cob": {"Sin dato": 299,"En garantía": 200,"Fuera de garantía, importe sin informar": 175,"Cubierto por mantenimiento": 39,"Facturado al cliente": 34,"Sin coste": 4},"anios": [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"cols": [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026],"ventas": [87,39,164,196,240,182,280,300,417,655,659,331],"mtz": [[1,1,3],[1,2,1],[1,5,1],[1,10,1],[2,2,6],[2,3,1],[2,4,2],[2,5,2],[2,6,1],[2,7,1],[2,8,4],[2,9,2],[2,10,1],[3,4,1],[3,5,5],[3,6,7],[3,7,9],[3,8,7],[3,9,11],[3,10,3],[3,11,2],[4,3,1],[4,4,8],[4,5,4],[4,6,11],[4,7,27],[4,8,8],[4,9,15],[4,10,12],[4,11,7],[5,5,3],[5,6,7],[5,7,2],[5,8,2],[5,9,8],[5,10,6],[5,11,2],[6,6,7],[6,7,12],[6,8,17],[6,9,25],[6,10,19],[6,11,6],[7,6,1],[7,7,11],[7,8,9],[7,9,14],[7,10,16],[7,11,16],[8,4,1],[8,5,1],[8,6,1],[8,7,2],[8,8,16],[8,9,23],[8,10,19],[8,11,15],[9,0,1],[9,2,1],[9,4,2],[9,5,2],[9,6,3],[9,7,3],[9,8,5],[9,9,49],[9,10,30],[9,11,18],[10,6,2],[10,7,1],[10,8,3],[10,9,19],[10,10,39],[10,11,6],[11,5,1],[11,8,3],[11,9,5],[11,10,12],[11,11,9]],"cli": [["Elha",475,140],["Sin Vello por Laser Low Cost SL",292,54],["BR Esthetic / Brull",276,23],["Tegemed",138,8],["Joule Medica",132,1],["Dermoscan",131,19],["Epil Point Italia",122,50],["Corpoderm",106,1],["Centros de depilacion Laser Ideal S.L.",97,27],["Clinica Belenus SPA",87,3],["BiNatural Krystosial Sp",62,10],["Laser Factory",61,2]],"coh": [["Todo el parque",[87,39,164,196,240,182,280,300,417,655,659,331],[[1,1,3],[1,2,1],[1,5,1],[1,10,1],[2,2,6],[2,3,1],[2,4,2],[2,5,2],[2,6,1],[2,7,1],[2,8,4],[2,9,2],[2,10,1],[3,4,1],[3,5,5],[3,6,7],[3,7,9],[3,8,7],[3,9,11],[3,10,3],[3,11,2],[4,3,1],[4,4,8],[4,5,4],[4,6,11],[4,7,27],[4,8,8],[4,9,15],[4,10,12],[4,11,7],[5,5,3],[5,6,7],[5,7,2],[5,8,2],[5,9,8],[5,10,6],[5,11,2],[6,6,7],[6,7,12],[6,8,17],[6,9,25],[6,10,19],[6,11,6],[7,6,1],[7,7,11],[7,8,9],[7,9,14],[7,10,16],[7,11,16],[8,4,1],[8,5,1],[8,6,1],[8,7,2],[8,8,16],[8,9,23],[8,10,19],[8,11,15],[9,0,1],[9,2,1],[9,4,2],[9,5,2],[9,6,3],[9,7,3],[9,8,5],[9,9,49],[9,10,30],[9,11,18],[10,6,2],[10,7,1],[10,8,3],[10,9,19],[10,10,39],[10,11,6],[11,5,1],[11,8,3],[11,9,5],[11,10,12],[11,11,9]],3550],["Elha",[0,0,0,13,71,54,81,58,5,74,83,34],[[3,6,5],[3,7,3],[3,8,2],[3,9,3],[4,4,1],[4,5,1],[4,6,4],[4,7,13],[4,8,6],[4,9,13],[4,10,5],[4,11,6],[5,5,1],[5,6,6],[5,7,2],[5,8,1],[5,9,3],[5,10,4],[5,11,2],[6,6,5],[6,7,4],[6,8,5],[6,9,9],[6,10,5],[6,11,4],[7,7,1],[7,8,1],[7,10,3],[9,8,1],[9,9,8],[9,10,4],[9,11,3],[10,10,1],[10,11,2]],473],["Sin Vello por Laser Low Cost SL",[0,0,0,0,0,2,14,13,63,85,85,30],[[6,6,1],[6,8,1],[6,9,3],[6,10,2],[7,8,1],[7,9,2],[8,8,1],[8,9,9],[8,10,8],[8,11,3],[9,9,8],[9,10,5],[9,11,4],[11,10,1]],292],["BR Esthetic / Brull",[0,0,31,31,13,5,8,19,73,16,82,2],[[2,2,5],[3,4,1],[3,8,1],[3,9,1],[3,11,1],[4,4,1],[4,6,1],[4,7,1],[4,8,1],[4,10,1],[4,11,1],[5,9,2],[7,11,3],[8,9,1],[8,10,1],[8,11,3]],280],["Tegemed",[0,1,0,0,7,27,21,27,27,12,13,4],[[4,6,1],[4,7,1],[5,5,1],[6,6,1],[6,7,2],[7,8,2]],139],["Joule Medica",[0,0,0,0,0,0,1,15,18,39,34,25],[[8,8,1]],132],["Dermoscan",[0,0,0,0,0,2,2,5,8,57,48,8],[[5,10,1],[7,9,1],[7,10,1],[7,11,1],[8,10,2],[8,11,3],[9,9,3],[9,10,4],[9,11,1],[10,10,1]],130],["Epil Point Italia",[0,0,0,0,0,0,9,33,23,25,12,20],[[6,8,4],[6,9,1],[6,10,3],[6,11,1],[7,7,1],[7,10,7],[7,11,7],[8,8,1],[8,9,2],[8,10,6],[8,11,1],[9,9,4],[9,10,6],[9,11,4],[10,10,2]],122],["Corpoderm",[0,0,0,0,0,0,0,0,10,25,47,24],[[9,9,1]],106],["Centros de depilacion Laser Ideal S.L.",[29,1,6,21,25,9,0,4,0,1,0,0],[[7,9,1]],96],["Clinica Belenus SPA",[0,0,0,0,0,0,0,0,1,66,12,8],[[9,9,2],[10,11,1]],87],["BiNatural Krystosial Sp",[0,0,0,0,0,0,3,8,13,23,11,3],[[9,0,1],[9,8,1],[9,9,3],[10,10,2],[11,5,1],[11,8,1],[11,11,1]],61],["Laser Factory",[0,0,0,0,0,0,0,0,0,53,5,3],[[9,9,1],[9,10,1]],61]],"diodo": [["Todo el parque",{"filas": ["2015","2016","2017","2018","2019","2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2015","2016","2017","2018","2019","2020","2021","2022","2023","2024","2025","2026"],"comp": [43,136,220,207,288,259,325,415,465,579,763,419,0],"cel": [[0,0,1],[0,1,1],[0,2,1],[0,4,2],[0,5,2],[0,6,3],[0,7,3],[0,8,8],[0,9,3],[1,1,5],[1,2,1],[1,4,5],[1,5,4],[1,6,3],[1,7,1],[1,9,2],[1,10,6],[1,11,3],[2,2,8],[2,3,1],[2,4,7],[2,5,5],[2,6,3],[2,7,4],[2,8,5],[2,9,4],[2,11,1],[3,3,1],[3,4,4],[3,5,3],[3,6,8],[3,7,10],[3,8,2],[3,9,3],[3,10,3],[3,11,1],[4,4,5],[4,5,9],[4,6,12],[4,7,29],[4,8,9],[4,9,13],[4,10,5],[4,11,3],[5,5,4],[5,6,11],[5,7,11],[5,8,12],[5,9,9],[5,10,9],[5,11,5],[6,6,8],[6,7,17],[6,8,16],[6,9,14],[6,10,20],[6,11,3],[7,7,17],[7,8,21],[7,9,28],[7,10,25],[7,11,12],[8,8,13],[8,9,50],[8,10,35],[8,11,14],[9,9,22],[9,10,21],[9,11,12],[10,10,9],[10,11,9],[11,11,3],[12,6,1],[12,7,3],[12,8,2],[12,9,19],[12,10,20],[12,11,12]]}],["Elha",{"filas": ["2018","2019","2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2019","2020","2021","2022","2023","2024","2025","2026"],"comp": [17,59,63,80,87,28,59,90,40,0],"cel": [[0,2,5],[0,3,3],[0,4,2],[0,5,1],[0,7,1],[1,0,1],[1,1,1],[1,2,4],[1,3,12],[1,4,2],[1,5,8],[1,6,2],[1,7,2],[2,1,1],[2,2,6],[2,3,2],[2,4,1],[2,5,4],[2,6,4],[2,7,5],[3,2,5],[3,3,5],[3,4,6],[3,5,3],[3,6,5],[3,7,1],[4,3,2],[4,4,3],[4,5,6],[4,6,4],[4,7,2],[5,4,2],[5,5,6],[6,5,3],[6,6,2],[6,7,1],[7,6,2],[7,7,2],[9,5,3],[9,6,2],[9,7,3]]}],["Sin Vello por Laser Low Cost SL",{"filas": ["2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2021","2023","2024","2025","2026"],"comp": [2,13,17,45,72,95,19,0],"cel": [[0,3,1],[1,0,1],[1,1,1],[1,2,3],[2,1,1],[2,2,4],[2,3,1],[3,1,1],[3,2,5],[3,3,5],[3,4,3],[4,2,2],[4,3,1],[4,4,2],[7,2,7],[7,3,7],[7,4,2]]}],["BR Esthetic / Brull",{"filas": ["2016","2017","2018","2019","2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2017","2019","2021","2022","2023","2024","2025","2026"],"comp": [1,50,10,17,3,9,16,39,34,60,8,0],"cel": [[1,0,5],[1,1,1],[1,4,1],[1,5,1],[1,7,1],[2,1,1],[3,2,1],[3,3,1],[3,4,1],[3,5,1],[3,6,1],[5,7,1],[6,7,1],[7,6,1],[7,7,2],[8,5,1],[9,7,1],[11,7,2]]}],["Tegemed",{"filas": ["2018","2019","2020","2021","2022","2023","2024","2025","2026"],"cols": ["2020","2021","2022","2023"],"comp": [2,6,25,24,36,16,12,11,2],"cel": [[0,2,1],[2,0,1],[2,1,1],[3,1,1],[3,2,2],[4,3,1],[5,3,1]]}],["Joule Medica",{"filas": ["2022","2023","2024","2025","2026"],"cols": [],"comp": [14,18,29,31,10],"cel": []}],["Dermoscan",{"filas": ["2015","2016","2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2024","2025","2026"],"comp": [1,1,1,2,6,6,39,43,5,0],"cel": [[0,0,1],[1,1,1],[2,1,1],[4,0,1],[4,1,1],[4,2,1],[5,1,1],[5,2,2],[6,0,1],[7,1,1],[9,0,1],[9,1,3],[9,2,2]]}],["Epil Point Italia",{"filas": ["2020","2021","2022","2023","2024","2025","2026","Sin compra reg."],"cols": ["2022","2023","2024","2025","2026"],"comp": [1,12,33,20,23,30,26,0],"cel": [[0,0,1],[1,1,1],[1,2,1],[1,3,3],[2,2,2],[2,3,7],[2,4,6],[3,1,2],[3,2,2],[3,3,6],[4,2,2],[4,3,3],[4,4,3],[5,3,1],[5,4,2],[7,3,1]]}],["Corpoderm",{"filas": ["2017","2019","2023","2024","2025","2026"],"cols": [],"comp": [1,1,8,19,41,10],"cel": []}],["Centros de depilacion Laser Ideal S.L.",{"filas": ["2018","2021","2022","2023"],"cols": ["2024"],"comp": [2,1,3,2],"cel": [[2,0,1]]}],["Clinica Belenus SPA",{"filas": ["2023","2024","2025","2026"],"cols": ["2024","2026"],"comp": [3,46,6,9],"cel": [[1,0,2],[2,1,1]]}],["BiNatural Krystosial Sp",{"filas": ["2015","2016","2020","2021","2022","2023","2024","2025"],"cols": ["2015","2020","2023","2024","2025","2026"],"comp": [4,3,2,2,6,9,24,4],"cel": [[0,0,1],[0,2,1],[0,3,2],[1,1,1],[1,4,2],[2,2,1],[3,2,1],[5,3,1],[5,5,1]]}],["Laser Factory",{"filas": ["2023","2024","2025","Sin compra reg."],"cols": ["2024","2025"],"comp": [1,8,8,0],"cel": [[3,0,1],[3,1,1]]}]],"diodo_mes": {"filas": ["2015-10","2015-11","2015-12","2016-01","2016-02","2016-03","2016-04","2016-05","2016-06","2016-07","2016-09","2016-10","2016-11","2016-12","2017-01","2017-02","2017-03","2017-04","2017-05","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2017-12","2018-01","2018-02","2018-03","2018-04","2018-05","2018-06","2018-07","2018-08","2018-09","2018-10","2018-11","2018-12","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-02","2022-03","2022-04","2022-05","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","Sin compra reg."],"cols": ["2015-12","2016-03","2016-04","2016-06","2016-09","2016-11","2017-06","2017-07","2017-08","2017-09","2017-10","2017-11","2018-10","2018-11","2019-01","2019-02","2019-03","2019-04","2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-12","2020-01","2020-02","2020-03","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-09"],"comp": [12,19,12,10,4,6,16,18,14,10,14,16,16,12,5,11,18,10,18,10,11,9,28,33,47,20,12,24,14,16,14,27,17,8,18,17,26,14,39,22,30,34,34,14,15,5,23,19,39,14,29,26,10,12,18,35,10,35,17,29,38,15,37,20,32,38,40,35,30,25,51,2,42,51,35,32,37,25,35,67,30,61,18,88,50,45,60,25,10,10,51,57,51,37,74,26,27,31,20,22,107,91,75,69,20,55,65,68,65,96,100,25,79,60,82,48,20,49,21,50,85,40,51,10,93,0],"cel": [[0,26,1],[1,0,1],[1,4,1],[1,19,1],[1,32,1],[1,38,1],[1,48,1],[1,58,1],[1,60,1],[1,61,1],[1,63,1],[1,65,2],[1,66,1],[2,7,1],[2,23,1],[2,37,1],[2,46,1],[2,56,1],[2,64,1],[2,66,1],[2,73,1],[2,76,1],[2,80,1],[3,2,1],[3,3,1],[3,81,2],[3,83,3],[4,93,1],[5,1,1],[5,26,1],[5,98,1],[6,19,1],[6,57,1],[6,97,1],[6,99,1],[7,18,1],[7,22,1],[7,32,1],[7,85,1],[8,4,1],[9,29,1],[10,5,1],[10,84,1],[11,30,1],[11,46,1],[12,11,1],[12,14,1],[12,19,1],[12,43,1],[13,44,1],[14,22,1],[16,9,1],[16,32,1],[16,44,1],[16,50,1],[17,61,1],[17,69,1],[18,6,1],[18,22,1],[20,8,1],[20,20,1],[20,25,1],[22,9,3],[22,10,2],[22,69,1],[22,74,1],[23,20,1],[23,22,1],[23,24,1],[23,28,1],[23,34,1],[23,44,1],[23,55,1],[23,61,1],[23,73,1],[23,77,1],[23,102,1],[24,15,1],[24,31,1],[24,56,1],[24,58,1],[24,61,1],[24,82,1],[25,12,1],[25,39,1],[26,30,1],[26,49,1],[26,80,1],[27,38,1],[27,43,1],[27,55,1],[27,56,1],[27,95,1],[28,14,1],[28,16,1],[29,83,1],[30,19,1],[31,58,1],[31,89,1],[32,13,1],[32,32,1],[32,40,1],[32,51,1],[35,51,1],[36,21,1],[36,34,1],[36,37,1],[36,38,1],[36,42,1],[36,45,1],[36,46,1],[36,51,1],[36,60,1],[36,85,1],[37,50,1],[37,53,2],[37,69,1],[37,71,1],[37,76,1],[38,15,1],[38,42,1],[38,47,1],[38,48,2],[38,50,1],[38,53,1],[38,56,1],[38,57,1],[38,64,1],[38,70,1],[38,80,1],[38,86,1],[39,48,1],[39,53,1],[39,72,1],[39,74,3],[39,87,1],[40,17,1],[40,33,1],[40,35,1],[40,36,1],[40,42,1],[40,43,1],[40,73,1],[40,80,1],[40,96,1],[41,22,1],[41,38,1],[41,48,1],[41,53,1],[41,57,1],[41,60,1],[41,61,1],[41,71,1],[41,74,1],[41,75,1],[41,87,1],[41,90,1],[41,95,1],[42,19,1],[42,20,1],[42,30,1],[42,48,2],[42,50,1],[42,73,1],[42,80,1],[42,97,1],[43,47,1],[43,57,1],[44,27,1],[44,29,1],[44,30,1],[44,46,1],[44,85,1],[46,25,1],[46,35,1],[46,50,1],[46,53,1],[46,56,2],[46,57,1],[46,61,1],[46,69,1],[47,31,1],[47,46,1],[47,49,1],[47,50,2],[47,53,1],[47,56,1],[47,60,1],[47,64,1],[48,41,1],[48,43,1],[48,45,1],[48,48,1],[48,50,1],[48,56,1],[48,63,1],[48,81,1],[49,58,1],[50,26,1],[50,42,1],[50,46,1],[50,47,3],[50,58,1],[50,60,1],[50,73,1],[51,26,1],[51,43,1],[51,46,1],[51,49,1],[51,53,1],[51,56,1],[51,61,1],[51,80,1],[51,84,1],[52,72,1],[53,53,1],[53,59,1],[53,90,2],[53,95,1],[54,60,1],[54,69,1],[54,75,1],[54,97,1],[55,30,1],[55,66,1],[55,74,1],[55,86,1],[55,89,1],[55,90,2],[56,58,1],[56,73,1],[57,49,1],[57,58,1],[57,61,1],[57,63,1],[57,76,1],[57,99,1],[58,38,1],[58,54,1],[59,58,1],[59,60,1],[59,65,1],[60,35,1],[60,38,1],[60,40,1],[60,47,1],[60,54,1],[60,60,1],[60,63,1],[60,76,2],[60,87,2],[60,95,1],[60,99,1],[61,65,1],[62,42,1],[62,62,1],[62,64,2],[62,73,1],[62,75,1],[63,46,1],[63,47,1],[63,49,1],[63,54,1],[63,64,1],[63,89,1],[63,93,1],[63,98,1],[64,49,1],[64,50,1],[64,68,1],[64,69,1],[64,76,1],[64,87,1],[64,89,2],[64,93,1],[64,94,1],[65,44,1],[65,47,1],[65,50,1],[65,54,1],[65,65,1],[65,69,1],[65,72,1],[65,74,2],[65,75,1],[65,76,1],[65,86,1],[65,91,1],[66,43,1],[66,51,1],[66,52,1],[66,60,1],[66,61,2],[66,69,1],[66,73,1],[66,77,1],[66,89,1],[66,90,2],[66,99,1],[67,46,1],[67,53,1],[67,74,1],[67,85,1],[68,46,1],[68,48,2],[68,74,2],[68,87,1],[68,89,1],[69,48,1],[69,58,1],[69,60,1],[69,69,1],[69,87,1],[69,94,1],[70,53,1],[70,54,1],[70,56,2],[70,64,1],[70,74,1],[70,86,1],[70,92,1],[70,94,1],[70,99,1],[72,48,1],[72,52,1],[72,64,1],[72,68,1],[72,72,1],[72,99,1],[73,50,1],[73,69,1],[73,99,1],[74,50,1],[74,51,1],[74,63,1],[74,64,1],[74,74,1],[74,75,1],[74,87,1],[74,102,1],[75,51,1],[75,52,1],[75,61,1],[75,63,1],[75,73,1],[75,74,1],[75,79,1],[75,85,2],[75,87,1],[75,89,1],[75,90,1],[75,93,1],[76,53,2],[76,55,1],[76,56,1],[76,61,1],[76,67,1],[76,69,1],[76,71,1],[76,74,1],[76,76,1],[76,91,1],[76,92,1],[76,97,1],[77,67,1],[77,69,1],[77,73,1],[77,82,1],[77,87,1],[77,99,2],[78,55,2],[78,59,1],[78,61,1],[78,73,1],[78,84,1],[78,99,1],[79,56,2],[79,58,1],[79,59,1],[79,64,1],[79,69,1],[79,74,1],[79,75,1],[79,82,1],[79,88,1],[79,90,1],[79,92,1],[79,98,1],[79,100,1],[80,58,1],[80,82,1],[80,85,1],[80,93,1],[80,101,2],[81,59,2],[81,62,1],[81,63,1],[81,73,3],[81,75,1],[81,78,1],[81,79,1],[81,81,3],[81,82,3],[81,83,2],[81,84,1],[81,87,4],[81,88,1],[81,89,1],[81,98,1],[82,61,1],[82,85,1],[83,61,2],[83,63,1],[83,73,4],[83,74,3],[83,75,1],[83,79,1],[83,80,2],[83,81,1],[83,82,2],[83,83,1],[83,84,4],[83,86,1],[83,88,3],[83,89,1],[83,92,1],[83,95,1],[83,96,1],[83,98,1],[84,68,2],[84,73,1],[84,74,1],[84,75,1],[84,76,1],[84,77,1],[84,81,1],[84,82,2],[84,84,2],[84,89,1],[84,96,1],[84,97,1],[84,98,2],[84,99,1],[85,63,1],[85,75,1],[85,82,1],[85,85,2],[85,93,1],[85,94,1],[86,64,1],[86,65,1],[86,66,1],[86,72,2],[86,73,1],[86,74,1],[86,75,2],[86,76,1],[86,81,1],[86,84,1],[86,85,2],[86,88,1],[86,89,1],[86,90,2],[87,73,1],[87,75,1],[87,83,1],[87,85,1],[89,67,1],[90,71,2],[90,72,1],[90,77,1],[90,78,1],[90,79,1],[90,80,1],[90,82,2],[90,83,2],[90,88,1],[90,96,1],[90,97,1],[90,98,1],[90,99,1],[91,70,2],[91,73,1],[91,74,1],[91,76,1],[91,82,1],[91,87,1],[91,91,1],[91,99,1],[92,76,1],[92,80,1],[92,81,1],[92,88,1],[92,89,1],[92,96,1],[93,74,1],[93,81,1],[93,84,1],[93,99,1],[94,74,3],[94,75,1],[94,76,1],[94,79,1],[94,81,2],[94,82,1],[94,86,1],[94,90,1],[94,91,1],[94,95,1],[94,96,1],[94,101,1],[95,74,2],[95,79,2],[95,82,1],[95,86,2],[95,87,1],[95,89,1],[95,91,1],[96,81,1],[96,82,1],[96,86,1],[96,89,1],[96,96,1],[96,99,1],[96,101,1],[97,82,2],[97,83,1],[97,84,1],[97,89,1],[97,96,1],[97,99,1],[98,76,1],[98,88,1],[99,85,1],[100,79,1],[100,86,1],[100,100,1],[101,88,1],[101,98,1],[102,89,1],[102,91,1],[103,85,1],[103,97,1],[104,89,1],[104,90,1],[104,95,1],[105,89,1],[106,89,1],[106,102,1],[108,89,1],[108,91,1],[110,89,1],[110,101,2],[111,90,1],[111,91,1],[112,99,1],[113,96,1],[113,99,1],[114,99,1],[115,99,1],[117,99,1],[118,102,1],[121,101,1],[125,47,1],[125,56,2],[125,57,1],[125,69,1],[125,70,1],[125,72,1],[125,75,4],[125,76,8],[125,77,1],[125,78,1],[125,79,2],[125,81,2],[125,83,1],[125,84,1],[125,85,3],[125,86,1],[125,87,3],[125,89,7],[125,92,2],[125,94,2],[125,96,4],[125,97,1],[125,99,5],[125,100,1],[125,101,1]]},"serie": [[2015,1],[2016,6],[2017,10],[2018,2],[2019,23],[2020,27],[2021,49],[2022,97],[2023,90],[2024,179],[2025,161],[2026,82]],"gen": "2026-09-16 13:46"};
 /* Las matrices vienen dispersas ([fila,col,n] solo donde hay algo) para que la
@@ -270,4 +333,67 @@ document.getElementById("ft").textContent=
     var i=el("i"); i.style.background=x[1]; rd.append(i, el("span",null,x[0])) });
   fd.addEventListener("change",pinta); fg.addEventListener("change",pinta); pinta();
 })();
+
+/* ---- una pantalla: menu de vistas y portada (16-09-2026) ---- */
+var VS=[["v-portada","Portada"],["v-parque","El parque"],["v-censo","Los diodos"],
+        ["v-cambios","Cambios"],["v-cobro","Quién pagó"],["v-anadas","Por añada"],
+        ["v-diodo","Añada del diodo"],["v-clientes","Por cliente"],["v-calidad","Lo que no cuadra"]];
+function ver(id){
+  VS.forEach(function(v){var e=document.getElementById(v[0]); if(e) e.classList.toggle("on",v[0]===id)});
+  [].forEach.call(document.querySelectorAll("#mn button"),function(b){b.classList.toggle("on",b.dataset.v===id)});
+  var l=document.getElementById("lz"); if(l) l.scrollTop=0;
+  try{localStorage.setItem("pub-vista",id)}catch(e){}
+}
+(function(){
+  var m=document.getElementById("mn");
+  VS.forEach(function(v){
+    var b=document.createElement("button"); b.type="button"; b.textContent=v[1]; b.dataset.v=v[0];
+    b.onclick=function(){ver(v[0])}; m.appendChild(b);
+  });
+  var f=document.createElement("div"); f.className="fe";
+  f.innerHTML="<span>datos al</span> <b>"+(D.gen||"").slice(0,10)+"</b>"; m.appendChild(f);
+
+  var k=D.kpi;
+  var conCambio=0; D.cli.forEach(function(c){conCambio+=c[2]});
+  var tarjetas=[
+    ["Equipos en cliente", n(k.en_parque), n(k.equipos)+" registrados en total"],
+    ["Diodos comprados", n(k.diodos), n(k.con_diodo)+" equipos con diodo identificado"],
+    ["Cambios de diodo trazados", n(k.cambios), "es un suelo: el SAT declara "+n(k.tickets_diodo)+" y "+n(k.sin_trazar)+" no cuadran"],
+    ["Equipos sin diodo identificado", n(k.sin_diodo), Math.round(100*k.sin_diodo/k.equipos)+" % del parque"]
+  ];
+  var g=document.getElementById("pk");
+  tarjetas.forEach(function(t){
+    var c=el("div","kp");
+    c.appendChild(el("div","e",t[0])); c.appendChild(el("div","b",t[1])); c.appendChild(el("div","p",t[2]));
+    g.appendChild(c);
+  });
+
+  var mx=1; D.serie.forEach(function(x){if(x[1]>mx)mx=x[1]});
+  var cm=document.getElementById("pm");
+  D.serie.forEach(function(x){
+    var d=el("div","m"), z=el("div","z"), b=el("b");
+    b.style.height=Math.max(2,Math.round(100*x[1]/mx))+"%";
+    d.title=x[0]+": "+x[1]+" cambios";
+    z.appendChild(b); d.appendChild(z);
+    var s2=el("s",null,String(x[0]).slice(2)); d.appendChild(s2);
+    cm.appendChild(d);
+  });
+
+  var top=1; D.cli.forEach(function(c){if(c[2]>top)top=c[2]});
+  var rk=document.getElementById("pc2");
+  D.cli.slice().sort(function(a,b){return b[2]-a[2]}).slice(0,9).forEach(function(c){
+    var f2=el("div","f");
+    f2.appendChild(el("div","nm",c[0]));
+    f2.appendChild(el("div","vl",n(c[2])));
+    var ba=el("div","ba"), i=el("i"); i.style.width=(100*c[2]/top)+"%"; ba.appendChild(i); f2.appendChild(ba);
+    f2.title=c[0]+": "+c[1]+" equipos, "+c[2]+" cambios";
+    rk.appendChild(f2);
+  });
+
+  var v="v-portada";
+  try{var gd=localStorage.getItem("pub-vista");
+      if(gd && VS.some(function(x){return x[0]===gd})) v=gd}catch(e){}
+  ver(v);
+})();
+
 </script></body></html>
