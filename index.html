@@ -94,6 +94,15 @@ border:1px solid var(--li);background:var(--su);color:var(--mu);border-radius:99
 .mn button.on{background:var(--ac);border-color:var(--ac);color:#fff}
 .mn .fe{margin-left:auto;display:flex;align-items:center;gap:7px;font:500 12px "IBM Plex Sans",sans-serif;color:var(--mu)}
 .mn .fe b{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
+/* segundo nivel: las vistas que viven dentro de una pestana. Subrayado, no
+   otra pildora, para que no parezcan dos menus del mismo rango. */
+.sb{display:flex;gap:18px;flex-wrap:wrap;padding:0 0 12px;flex:0 0 auto;
+border-bottom:1px solid var(--li);margin-bottom:14px}
+.sb:empty{display:none}
+.sb button{font:500 13px "IBM Plex Sans",sans-serif;padding:0 0 9px;cursor:pointer;
+background:none;border:0;border-bottom:2px solid transparent;color:var(--mu);margin-bottom:-13px}
+.sb button:hover{color:var(--ink)}
+.sb button.on{color:var(--ac);border-bottom-color:var(--ac)}
 #v-portada{gap:14px}
 .pg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex:0 0 auto}
 .kp{background:var(--su);border:1px solid var(--l2);border-radius:14px;box-shadow:var(--sh);
@@ -149,6 +158,7 @@ El detalle equipo a equipo, con la fila de origen de cada dato, va en la versió
 <div id="lz"><div class="w">
 <nav class="blq" id="blq"></nav>
 <nav class="mn" id="mn"></nav>
+<nav class="sb" id="sb"></nav>
 <section id="v-portada">
   <div class="pg" id="pk"></div>
   <div class="pb">
@@ -437,12 +447,24 @@ function ver(id){
 var A = D.an || {};
 var COL = ["#00998A","#8E3B93","#C05621","#3B62B5"];
 function pcx(v){ return v==null ? "—" : (100*v).toFixed(1).replace(".",",")+" %" }
+/* Cinco pestanas, no nueve. Las que sobraban eran variantes del mismo objeto
+   (el parque es la lista de diodos sin el diodo; "quien pago" es el reverso de
+   "cambios"), asi que bajan a segundo nivel dentro de su pestana en vez de
+   competir arriba. No se pierde ninguna vista. */
 var BLQ = [
-  {id:"datos", t:"Datos", vistas:VS},
+  {id:"datos", t:"Datos", vistas:[
+     ["v-portada","Portada"],
+     ["v-censo","Los diodos", [["v-censo","Los diodos"],["v-parque","El parque"]]],
+     ["v-cambios","Cambios",  [["v-cambios","Los cambios"],["v-cobro","Quién pagó"]]],
+     ["v-anadas","Añadas",    [["v-anadas","Por añada de venta"],["v-diodo","Por añada del diodo"],
+                               ["v-clientes","Por cliente"]]],
+     ["v-calidad","Lo que no cuadra"],
+  ]},
   {id:"an", t:"Análisis", vistas:[["a-portada","Portada"],["a-vida","Vida del diodo"],
                                   ["a-cobro","Garantía o pagado"],["a-prem","Prematuros"]]},
 ];
 var BL = "datos";
+var SUB = {};          /* sub-vista elegida en cada pestana, para volver donde se estaba */
 function verBloque(id, vista){
   BL = id;
   var b = BLQ.filter(function(x){return x.id===id})[0];
@@ -457,6 +479,25 @@ function verBloque(id, vista){
   ver(vista || b.vistas[0][0]);
   try{localStorage.setItem("pub-bloque",id)}catch(e){}
 }
+/* devuelve la entrada de menu (de primer nivel) a la que pertenece una vista */
+function duenaDe(b, id){
+  for(var i=0;i<b.vistas.length;i++){
+    var v=b.vistas[i];
+    if(v[0]===id) return v;
+    if(v[2] && v[2].some(function(s){return s[0]===id})) return v;
+  }
+  return null;
+}
+function pintarSub(v, sub){
+  var m=document.getElementById("sb"); if(!m) return;
+  m.textContent="";
+  if(!v || !v[2]) return;
+  v[2].forEach(function(s){
+    var b=document.createElement("button"); b.type="button"; b.textContent=s[1];
+    b.dataset.s=s[0]; if(s[0]===sub) b.className="on";
+    b.onclick=function(){ver(s[0])}; m.appendChild(b);
+  });
+}
 /* ver() se reescribe para que conozca las vistas del bloque activo */
 function ver(id){
   /* el arranque original de la pagina llama a ver() antes de que BLQ tenga
@@ -468,11 +509,18 @@ function ver(id){
     return;
   }
   var b = BLQ.filter(function(x){return x.id===BL})[0] || BLQ[0];
-  var ids = b.vistas.map(function(v){return v[0]});
+  var due = duenaDe(b, id);
+  if(!due){ due = b.vistas[0]; id = due[2] ? (SUB[due[0]]||due[2][0][0]) : due[0]; }
+  if(due[2]){ SUB[due[0]] = id; }
+  /* se apaga todo y se enciende solo la vista pedida */
   BLQ.forEach(function(bb){bb.vistas.forEach(function(v){
-    var e=document.getElementById(v[0]); if(e) e.classList.toggle("on", v[0]===id && ids.indexOf(id)>=0);
+    var todas = v[2] ? v[2].map(function(s){return s[0]}) : [v[0]];
+    todas.forEach(function(sid){
+      var e=document.getElementById(sid); if(e) e.classList.toggle("on", sid===id);
+    });
   })});
-  [].forEach.call(document.querySelectorAll("#mn button"),function(x){x.classList.toggle("on",x.dataset.v===id)});
+  [].forEach.call(document.querySelectorAll("#mn button"),function(x){x.classList.toggle("on",x.dataset.v===due[0])});
+  pintarSub(due, id);
   var l=document.getElementById("lz"); if(l) l.scrollTop=0;
   try{localStorage.setItem("pub-vista",id)}catch(e){}
 }
@@ -578,7 +626,7 @@ function tabla(cab, filas){
       if(gb&&BLQ.some(function(x){return x.id===gb})) b0=gb;
       var gv=localStorage.getItem("pub-vista");
       var bl=BLQ.filter(function(x){return x.id===b0})[0];
-      if(gv&&bl.vistas.some(function(v){return v[0]===gv})) v0=gv;}catch(e){}
+      if(gv&&duenaDe(bl,gv)) v0=gv;}catch(e){}
   verBloque(b0,v0);
 })();
 
