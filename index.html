@@ -482,7 +482,7 @@ function curva(series, W, H){
   lo=Math.max(0,Math.floor((lo-0.04)*20)/20);
   var x=function(m){return ml+(Math.min(m,maxM)/maxM)*(W-ml-mr)};
   var y=function(s){return mt+(1-(s-lo)/(1-lo))*(H-mt-mb)};
-  var g='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+  var g='<svg viewBox="0 0 '+W+' '+H+'">';
   for(var v=1;v>lo+0.001;v-=(1-lo)/4){
     g+='<line class="ej" x1="'+ml+'" y1="'+y(v)+'" x2="'+(W-mr)+'" y2="'+y(v)+'"/>';
     g+='<text class="et" x="2" y="'+(y(v)+3)+'">'+Math.round(100*v)+'%</text>';
@@ -520,7 +520,18 @@ function tabla(cab, filas){
     k.appendChild(el("div","e",t[0]));
     var b=el("div","b",t[1]); if(!/^[\d.,]/.test(t[1])) b.style.fontSize="26px"; k.appendChild(b);
     k.appendChild(el("div","p",t[2])); g.appendChild(k)});
-  document.getElementById("acv").innerHTML = curva(S.modelos.slice(0,4));
+  /* la curva se dibuja a los pixeles reales de su caja: si el viewBox no
+     coincide con el hueco, el SVG estira y los numeros de los ejes salen
+     deformados. Se redibuja al cambiar el tamano de la ventana. */
+  function pintaCurva(){
+    var c=document.getElementById("acv"); if(!c) return;
+    var w=Math.round(c.clientWidth), h=Math.round(c.clientHeight);
+    if(w<80||h<60) return;
+    c.innerHTML = curva(S.modelos.slice(0,4), w, h);
+  }
+  pintaCurva();
+  var tmr; window.addEventListener("resize",function(){clearTimeout(tmr);tmr=setTimeout(pintaCurva,150)});
+  if(window.ResizeObserver){ try{ new ResizeObserver(function(){pintaCurva()}).observe(document.getElementById("acv")); }catch(e){} }
   var ly=document.getElementById("aly");
   S.modelos.slice(0,4).forEach(function(m,i){var sp=el("span");var ic=el("i");
     ic.style.background=COL[i%COL.length]; sp.appendChild(ic);
