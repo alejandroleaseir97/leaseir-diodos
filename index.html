@@ -173,8 +173,9 @@ border-bottom:1px solid var(--l2);background:var(--ra,var(--su))}
 .clc li:last-child{border-bottom:0}
 .clc li.tt{background:var(--s2);font-weight:600}
 .clc b{font-family:"IBM Plex Mono",monospace;font-weight:500;white-space:nowrap}
-.mbd table{width:100%;border-collapse:collapse;font-size:12.5px}
+.mbd table{width:100%;min-width:0;table-layout:auto;border-collapse:collapse;font-size:12.5px}
 .mbd table th,.mbd table td{padding:6px 9px;white-space:nowrap}
+.mbd table th:first-child,.mbd table td:first-child{width:auto}
 .cx{font:500 13px "IBM Plex Sans",sans-serif;background:var(--su);border:1px solid var(--li);
 color:var(--i2);border-radius:4px;padding:7px 14px;cursor:pointer}
 .cx:hover{border-color:var(--ac);color:var(--ac)}
@@ -544,11 +545,12 @@ function ver(id){
       que:"Cambios en los que se sabe qué pieza de mano pasó a llevar otro número de serie. Es un suelo, no un total: el SAT declara más tickets de los que se pueden casar con un diodo concreto.",
       calculo:[["Cambios trazados", n(k.cambios), true],
                ["tickets de cambio en Jira", n(k.tickets_diodo)],
-               ["tickets que no cuadran con un diodo", n(k.sin_trazar)]],
-      tabla:{titulo:"Cambios por año y quién los pagó",
-        cab:["Año","Cambios"], filas:D.serie.map(function(x){ return [x[0], x[1]] })
-          .concat([["—",""]]).concat(Object.keys(c).sort(function(a,b){return c[b]-c[a]})
-          .map(function(x){ return [x, c[x]] }))},
+               ["tickets que no cuadran con un diodo", n(k.sin_trazar)]]
+        .concat(Object.keys(c).sort(function(a,b){return c[b]-c[a]})
+          .map(function(x){ return [x, n(c[x])] })),
+      tabla:{titulo:"Cambios por año",
+        cab:["Año","Cambios","% del total"], filas:D.serie.map(function(x){
+          return [x[0], x[1], k.cambios?Math.round(100*x[1]/k.cambios)+" %":"—"] })},
       fuentes:[["DIODOS.xlsx","columna Cambiado SAT"],["Jira LEAS","tickets de SAT"],["Holded","facturas y presupuestos"]],
       ir:["v-cambios","Ver los cambios por año"]}) },
     function(){ abreCifra({titulo:"Equipos sin diodo identificado", valor:n(k.sin_diodo),
