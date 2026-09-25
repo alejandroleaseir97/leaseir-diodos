@@ -99,6 +99,33 @@ header .sub{display:none}
 section{display:none;margin:0}
 section.on{display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
 section.on>.sc,section.on>.q{flex:1 1 auto;min-height:0;overflow:auto}
+/* las matrices de producción también se desplazan DENTRO de su tarjeta: si no,
+   con doce años de filas la tabla se sale por abajo y no se ve el total */
+section.on>#pm-mz,section.on>#pd-mz{flex:1 1 auto;min-height:0;overflow:auto}
+#pm-mz table th,#pm-mz table td{padding:4px 2px;font-size:11.5px}
+#pd-mz table th,#pd-mz table td{padding:3px 0;font-size:10.5px}
+/* gráficas */
+.lz{position:relative;width:100%;height:100%;min-height:150px}
+.lz svg{width:100%;height:100%;display:block;overflow:visible}
+.lz .rej{stroke:var(--l2);stroke-width:1}
+.lz .et{font:500 10px "IBM Plex Mono",monospace;fill:var(--fa)}
+.lz .etv{font:600 11px "IBM Plex Mono",monospace;fill:var(--in)}
+.lz .marca{cursor:pointer}
+.lz .marca:hover{filter:brightness(1.12)}
+.lz .avi{font:600 9.5px "IBM Plex Sans",sans-serif;fill:var(--wa,#96580F);
+  text-transform:uppercase;letter-spacing:.06em}
+.tp{position:absolute;pointer-events:none;background:var(--su);border:1px solid var(--li);
+  border-radius:6px;box-shadow:var(--sh);padding:7px 10px;font:500 12px "IBM Plex Sans",sans-serif;
+  color:var(--in);white-space:nowrap;opacity:0;transition:opacity .1s;z-index:5}
+.tp b{font-family:"IBM Plex Mono",monospace}
+.tp s{display:block;color:var(--mu);font-weight:400;font-size:11px;margin-top:2px;text-decoration:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;flex:0 0 auto}
+.chips button{font:500 11.5px "IBM Plex Sans",sans-serif;padding:5px 10px;border-radius:999px;
+  border:1px solid var(--li);background:var(--s2);color:var(--i2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px}
+.chips button:hover{border-color:var(--ac);color:var(--ac)}
+.chips button b{font-family:"IBM Plex Mono",monospace;font-weight:600}
+.chips button.mal{border-color:var(--wa,#96580F);color:var(--wa,#96580F);background:var(--s2)}
 footer{display:none}
 .mn{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0 14px;flex:0 0 auto}
 .mn button{font:500 13px "IBM Plex Sans",sans-serif;padding:7px 13px;cursor:pointer;
@@ -342,10 +369,11 @@ pieza de mano.</p></section>
 <span>ritmo, tendencia y fechas que no se sostienen</span></div>
 <div class="pg" id="ap-k" style="margin-bottom:14px"></div>
 <div class="pb">
-  <div class="pc"><h3>Diodos montados por mes</h3><p class="nt">últimos 24 meses del calendario</p>
-    <div class="cu"><div class="ms" id="ap-ms"></div></div></div>
-  <div class="pc"><h3>Fechas que no cuadran</h3><p class="nt">pincha cada una para ver los diodos</p>
-    <div class="cu"><div class="rk" id="ap-rr"></div></div></div>
+  <div class="pc"><h3>Cómo va la producción</h3>
+    <p class="nt">diodos montados al mes · la línea de puntos es la media de tres meses</p>
+    <div class="cu"><div class="lz" id="ap-ln"></div></div><div class="lyc" id="ap-ly"></div></div>
+  <div class="pc"><h3>Qué día se monta</h3><p class="nt">todos los años juntos · pincha una barra</p>
+    <div class="cu"><div class="lz" id="ap-dw"></div></div><div class="chips" id="ap-rr"></div></div>
 </div></section>
 
 <section id="v-calidad"><div class="sh"><h2>Lo que no cuadra</h2><span>y por qué</span></div><div class="q" id="q"></div></section>
@@ -1362,30 +1390,135 @@ function ver(id){
       cifraPinchable(k, t[3]); g.append(k);
     });
 
-    /* barras por mes */
-    var cm=document.getElementById("ap-ms"); cm.textContent="";
-    var ult=rango.slice(-24), mxm=1;
-    ult.forEach(function(k){ var v=(porMes[k]||[]).length; if(v>mxm) mxm=v });
-    ult.forEach(function(k,i){
-      var l=porMes[k]||[];
-      var d=el("div","m"), z=el("div","z"), b=el("b");
-      b.style.height=Math.max(2,Math.round(100*l.length/mxm))+"%";
-      if(!l.length) d.className="m cero";
-      z.append(b); d.append(z); d.append(el("s",null,k.slice(2)));
-      var prev=ult.slice(Math.max(0,i-3),i).map(function(x){return (porMes[x]||[]).length});
-      var m3=prev.length? prev.reduce(function(a,b){return a+b},0)/prev.length : null;
-      d.title=k+": "+l.length+" diodos"+(m3!=null?" · media de los 3 anteriores: "+m3.toFixed(1).replace(".",","):"");
-      d.style.cursor="pointer";
-      d.onclick=function(){ ver("Montados en "+k, l, "Los diodos montados en el mes.",
-        [["En el mes", n(l.length), true]]
-        .concat(m3!=null?[["media de los 3 meses anteriores", m3.toFixed(1).replace(".",",")],
-          ["contra esa media", (m3? ((l.length-m3)>=0?"+":"")+Math.round(100*(l.length-m3)/m3)+" %":"—")]]:[])
-        .concat([["de origen", n(l.filter(function(p){return p.papel==="original"}).length)],
-                 ["recambios", n(l.filter(function(p){return p.papel==="cambio"}).length)],
-                 ["días con montaje", n(dias(l))]]),
-        null, ["v-prodmes","Ver la matriz mes a mes"]) };
-      cm.append(d);
-    });
+    /* ---- gráfica de línea: cómo va la producción ----
+       Serie única = área + línea en el acento. La media de tres meses va del
+       mismo tono en punteado: un segundo color no daría identidad, sólo ruido.
+       El eje son los meses del calendario: un mes a cero tiene que verse. */
+    (function(){
+      var caja=document.getElementById("ap-ln"); if(!caja) return;
+      var serie=rango.slice(-36).map(function(k){ return {k:k, v:(porMes[k]||[]).length} });
+      var media=serie.map(function(x,i){
+        var p=serie.slice(Math.max(0,i-2),i+1).map(function(y){return y.v});
+        return p.reduce(function(a,b){return a+b},0)/p.length });
+      var tip=el("div","tp"); caja.append(tip);
+      function pinta(){
+        var W=Math.round(caja.clientWidth), H=Math.round(caja.clientHeight);
+        if(W<80||H<80) return;
+        var ml=34, mr=14, mt=16, mb=24, mx=1;
+        serie.forEach(function(s){ if(s.v>mx) mx=s.v });
+        var px=function(i){ return ml+(serie.length<2?0:i*(W-ml-mr)/(serie.length-1)) };
+        var py=function(v){ return mt+(1-v/mx)*(H-mt-mb) };
+        var g='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diodos montados al mes">';
+        for(var t=0;t<=3;t++){ var v=mx*t/3;
+          g+='<line class="rej" x1="'+ml+'" y1="'+py(v)+'" x2="'+(W-mr)+'" y2="'+py(v)+'"/>'
+           + '<text class="et" x="2" y="'+(py(v)+3)+'">'+Math.round(v)+'</text>'; }
+        var d="M "+px(0)+" "+py(serie[0].v);
+        serie.forEach(function(s,i){ if(i) d+=" L "+px(i)+" "+py(s.v) });
+        g+='<path d="'+d+' L '+px(serie.length-1)+' '+py(0)+' L '+px(0)+' '+py(0)+' Z" fill="var(--ac)" fill-opacity=".12"/>';
+        g+='<path d="'+d+'" fill="none" stroke="var(--ac)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+        var dm="M "+px(0)+" "+py(media[0]);
+        media.forEach(function(v,i){ if(i) dm+=" L "+px(i)+" "+py(v) });
+        g+='<path d="'+dm+'" fill="none" stroke="var(--ac)" stroke-width="1.6" stroke-dasharray="3 3" stroke-opacity=".55" vector-effect="non-scaling-stroke"/>';
+        serie.forEach(function(s,i){ if(s.v) return;
+          g+='<circle cx="'+px(i)+'" cy="'+py(0)+'" r="4" fill="#96580F"/>' });
+        var iu=serie.length-1;
+        g+='<circle cx="'+px(iu)+'" cy="'+py(serie[iu].v)+'" r="4.5" fill="var(--ac)" stroke="var(--su)" stroke-width="2"/>';
+        g+='<text class="etv" x="'+(px(iu)-6)+'" y="'+(py(serie[iu].v)-9)+'" text-anchor="end">'+serie[iu].v+'</text>';
+        serie.forEach(function(s,i){ if(i%6 && i!==iu) return;
+          g+='<text class="et" x="'+px(i)+'" y="'+(H-6)+'" text-anchor="middle">'+s.k.slice(2)+'</text>' });
+        serie.forEach(function(s,i){ var w=(W-ml-mr)/serie.length;
+          g+='<rect class="marca" x="'+(px(i)-w/2)+'" y="'+mt+'" width="'+w+'" height="'+(H-mt-mb)+'" fill="transparent" data-i="'+i+'"/>' });
+        g+='</svg>';
+        caja.innerHTML=g; caja.append(tip);
+        [].forEach.call(caja.querySelectorAll("rect.marca"), function(r){
+          var i=+r.dataset.i, s=serie[i];
+          r.addEventListener("mousemove", function(ev){
+            var b=caja.getBoundingClientRect();
+            tip.innerHTML="<b>"+n(s.v)+"</b> diodos<s>"+s.k+" · media de tres meses "+media[i].toFixed(1).replace(".",",")+"</s>";
+            tip.style.opacity="1";
+            tip.style.left=Math.min(b.width-160, Math.max(0, ev.clientX-b.left+12))+"px";
+            tip.style.top=Math.max(0, ev.clientY-b.top-46)+"px";
+          });
+          r.addEventListener("mouseleave", function(){ tip.style.opacity="0" });
+          r.addEventListener("click", function(){
+            var l=porMes[s.k]||[];
+            ver("Montados en "+s.k, l, "Los diodos montados en el mes.",
+              [["En el mes", n(l.length), true],
+               ["media de tres meses", media[i].toFixed(1).replace(".",",")],
+               ["de origen", n(l.filter(function(p){return p.papel==="original"}).length)],
+               ["recambios", n(l.filter(function(p){return p.papel==="cambio"}).length)],
+               ["días con montaje", n(dias(l))]],
+              null, ["v-prodmes","Ver la matriz mes a mes"]);
+          });
+        });
+      }
+      pinta();
+      var tm; window.addEventListener("resize", function(){ clearTimeout(tm); tm=setTimeout(pinta,150) });
+      if(window.ResizeObserver){ try{ new ResizeObserver(function(){pinta()}).observe(caja) }catch(e){} }
+      var ly=document.getElementById("ap-ly");
+      if(ly){ ly.textContent="";
+        var a=el("span"), ia=el("i"); ia.style.background="var(--ac)";
+        a.append(ia, document.createTextNode("diodos del mes")); ly.append(a);
+        var m=el("span"), im=el("i");
+        im.style.cssText="background:repeating-linear-gradient(90deg,var(--ac) 0 3px,transparent 3px 6px);opacity:.65";
+        m.append(im, document.createTextNode("media de tres meses")); ly.append(m);
+        if(rango.slice(-36).some(function(k){return !porMes[k]})){
+          var z=el("span"), iz=el("i");
+          iz.style.cssText="background:#96580F;width:9px;height:9px;border-radius:50%";
+          z.append(iz, document.createTextNode("mes sin ningún montaje")); ly.append(z); } }
+    })();
+
+    /* ---- barras por día de la semana ----
+       El día fuerte en acento, el resto en gris y el fin de semana en color de
+       aviso con su cifra encima: el color solo nunca dice qué pasa. */
+    (function(){
+      var caja=document.getElementById("ap-dw"); if(!caja) return;
+      var orden=[1,2,3,4,5,6,0];
+      var datos=orden.map(function(k){ return {k:k, nom:DOW[k].slice(0,3),
+        l:P.filter(function(p){return p.dow===k})} });
+      var mx=1; datos.forEach(function(d){ if(d.l.length>mx) mx=d.l.length });
+      var fuerte=datos.reduce(function(a,b){ return b.l.length>a.l.length?b:a }).k;
+      var tip=el("div","tp"); caja.append(tip);
+      function pinta(){
+        var W=Math.round(caja.clientWidth), H=Math.round(caja.clientHeight);
+        if(W<80||H<60) return;
+        var ml=6, mr=6, mt=20, mb=20, bw=(W-ml-mr)/datos.length;
+        var g='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diodos montados por día de la semana">';
+        datos.forEach(function(d,i){
+          var finde = d.k===0||d.k===6;
+          var h=Math.max(2,(d.l.length/mx)*(H-mt-mb));
+          var x=ml+i*bw+bw*0.16, w=bw*0.68, y=H-mb-h;
+          var col = finde ? "#96580F" : (d.k===fuerte ? "var(--ac)" : "var(--li)");
+          g+='<rect class="marca" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="'+col+'" data-i="'+i+'"/>';
+          g+='<text class="et" x="'+(x+w/2)+'" y="'+(H-6)+'" text-anchor="middle">'+d.nom+'</text>';
+          if(d.k===fuerte || finde)
+            g+='<text class="'+(finde?"avi":"etv")+'" x="'+(x+w/2)+'" y="'+(y-6)+'" text-anchor="middle">'+n(d.l.length)+'</text>';
+        });
+        g+='</svg>';
+        caja.innerHTML=g; caja.append(tip);
+        [].forEach.call(caja.querySelectorAll("rect.marca"), function(r){
+          var d=datos[+r.dataset.i];
+          r.addEventListener("mousemove", function(ev){
+            var b=caja.getBoundingClientRect();
+            tip.innerHTML="<b>"+n(d.l.length)+"</b> diodos<s>"+DOW[d.k]+" · "+Math.round(100*d.l.length/P.length)+" % del total</s>";
+            tip.style.opacity="1";
+            tip.style.left=Math.min(b.width-160, Math.max(0, ev.clientX-b.left+12))+"px";
+            tip.style.top=Math.max(0, ev.clientY-b.top-46)+"px";
+          });
+          r.addEventListener("mouseleave", function(){ tip.style.opacity="0" });
+          r.addEventListener("click", function(){ ver(DOW[d.k], d.l,
+            (d.k===0||d.k===6)
+              ? "Diodos montados en "+DOW[d.k]+". Puede ser real, pero si son muchos lo normal es que la fecha apuntada no sea la del montaje."
+              : "Diodos montados en "+DOW[d.k]+", sumando toda la serie.",
+            [[DOW[d.k], n(d.l.length), true],
+             ["% de la producción", Math.round(100*d.l.length/P.length)+" %"],
+             ["días distintos", n(dias(d.l))]]) });
+        });
+      }
+      pinta();
+      var tm; window.addEventListener("resize", function(){ clearTimeout(tm); tm=setTimeout(pinta,150) });
+      if(window.ResizeObserver){ try{ new ResizeObserver(function(){pinta()}).observe(caja) }catch(e){} }
+    })();
 
     /* rarezas */
     var rr=document.getElementById("ap-rr"); rr.textContent="";
@@ -1429,15 +1562,12 @@ function ver(id){
           accion:"Mirar dos o tres: si todos los diodos son de la misma familia y correlativos, es una tanda real. Si son de todo tipo, es una carga al fichero.",
           ir:["v-proddia","Ver el día a día"]}) }]
     ];
-    var mxr=1; rows.forEach(function(r){ if(r[1]>mxr) mxr=r[1] });
+    /* debajo de la gráfica, en fichas: son avisos, no una serie */
     rows.forEach(function(r){
-      var d=el("div","f");
-      d.append(el("div","nm",r[0]), el("div","vl",n(r[1])));
-      var b=el("div","bar"), i=el("i");
-      i.style.width=(100*r[1]/mxr)+"%";
-      i.style.background = r[1] ? "var(--c3)" : "var(--li)";
-      b.append(i); d.append(b);
-      cifraPinchable(d, r[2]); rr.append(d);
+      var b=document.createElement("button"); b.type="button";
+      if(r[1]) b.className="mal";
+      b.append(el("b",null,n(r[1])), document.createTextNode(r[0].toLowerCase()));
+      b.onclick=r[2]; rr.append(b);
     });
   })();
 })();
