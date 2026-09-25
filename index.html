@@ -164,9 +164,12 @@ color:var(--fa);margin-bottom:3px}
 gap:8px;align-items:center;background:var(--s2)}
 .mft .nt{margin-right:auto;font-size:12px}
 /* cifra pinchable: la tarjeta de portada se abre y enseña sus filas */
-.kp.px{cursor:pointer;transition:border-color .12s,transform .12s}
+.px{cursor:pointer}
+.px:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.kp.px{transition:border-color .12s,transform .12s}
 .kp.px:hover{border-color:var(--mu);transform:translateY(-1px)}
-.kp.px:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.rk .f.px:hover .nm{color:var(--in)}
+.ms .m{cursor:pointer}
 .clc{list-style:none;padding:0;margin:0;border:1px solid var(--l2);border-radius:6px;overflow:hidden}
 .clc li{display:flex;justify-content:space-between;gap:16px;padding:8px 13px;font-size:13.5px;
 border-bottom:1px solid var(--l2);background:var(--ra,var(--su))}
@@ -312,6 +315,39 @@ pieza de mano.</p></section>
 <section id="v-clientes"><div class="sh"><h2>Parque por cliente</h2><span>equipos = máquinas · nº de pieza = lo que cuenta el dashboard del SAT (una renumeración es la misma máquina)</span></div>
 <div class="sc"><table><thead><tr><th class="l">Cliente</th><th>Equipos</th><th>Nº de pieza</th><th>Cambios</th>
 <th>Por equipo</th></tr></thead><tbody id="tc2"></tbody></table></div></section>
+<!-- Producción: cuántos diodos se montan y cuándo. La fecha es la de montaje
+     del diodo en la pieza de mano, que es cuando se hace el trabajo. -->
+<section id="v-prodmes"><div class="sh"><h2>Diodos montados, mes a mes</h2>
+<span>fila = año · columna = mes · pincha una celda</span></div>
+<div class="flt">
+  <select id="pm-pap" aria-label="Papel del diodo"></select>
+  <select id="pm-fam" aria-label="Familia de diodo"></select>
+  <span class="rf" id="pm-res"></span>
+</div>
+<div id="pm-mz" style="border:1px solid var(--li);border-radius:14px;background:var(--su);padding:4px"></div>
+<div class="rampa" id="pm-rp"></div>
+<p class="hint" id="pm-av" style="margin-top:10px;max-width:95ch"></p></section>
+
+<section id="v-proddia"><div class="sh"><h2>Día a día</h2>
+<span>fila = mes · columna = día · el ritmo real de taller, no la media</span></div>
+<div class="flt">
+  <select id="pd-anio" aria-label="Año"></select>
+  <select id="pd-fam" aria-label="Familia de diodo"></select>
+  <span class="rf" id="pd-res"></span>
+</div>
+<div id="pd-mz" style="border:1px solid var(--li);border-radius:14px;background:var(--su);padding:4px;overflow:hidden"></div>
+<div class="rampa" id="pd-rp"></div></section>
+
+<section id="a-prod"><div class="sh"><h2>Producción del taller</h2>
+<span>ritmo, tendencia y fechas que no se sostienen</span></div>
+<div class="pg" id="ap-k" style="margin-bottom:14px"></div>
+<div class="pb">
+  <div class="pc"><h3>Diodos montados por mes</h3><p class="nt">últimos 24 meses del calendario</p>
+    <div class="cu"><div class="ms" id="ap-ms"></div></div></div>
+  <div class="pc"><h3>Fechas que no cuadran</h3><p class="nt">pincha cada una para ver los diodos</p>
+    <div class="cu"><div class="rk" id="ap-rr"></div></div></div>
+</div></section>
+
 <section id="v-calidad"><div class="sh"><h2>Lo que no cuadra</h2><span>y por qué</span></div><div class="q" id="q"></div></section>
 <footer id="ft"></footer></div></div>
 <dialog id="md"><div class="mbx">
@@ -681,12 +717,14 @@ var BLQ = [
      ["g-diodos","Los diodos", [["v-uno","Uno a uno"],["v-fam","Stock por familia"],
                                 ["v-censo","Dónde están"],["v-parque","El parque"]]],
      ["g-cambios","Cambios",  [["v-cambios","Los cambios"],["v-cobro","Quién pagó"]]],
+     ["g-prod","Producción",  [["v-prodmes","Mes a mes"],["v-proddia","Día a día"]]],
      ["g-anadas","Añadas",    [["v-edad","Por edad del equipo"],["v-anadas","Por año natural"],
                                ["v-diodo","Por añada del diodo"],["v-clientes","Por cliente"]]],
      ["v-calidad","Lo que no cuadra"],
   ]},
   {id:"an", t:"Análisis", vistas:[["a-portada","Portada"],["a-vida","Vida del diodo"],
-                                  ["a-cobro","Garantía o pagado"],["a-prem","Prematuros"]]},
+                                  ["a-cobro","Garantía o pagado"],["a-prem","Prematuros"],
+                                  ["a-prod","Producción"]]},
 ];
 var BL = "datos";
 var SUB = {};          /* sub-vista elegida en cada pestana, para volver donde se estaba */
@@ -1056,6 +1094,352 @@ function ver(id){
     + "Se han dejado fuera "+n(D.reventas||0)+" cambios con fecha anterior a la venta del equipo, que son reventas. "
     + "Las añadas de menos de 20 equipos no salen: un solo cambio movería el porcentaje diez puntos.";
   pinta();
+})();
+
+/* ==================== PRODUCCIÓN (25-09-2026) ================================
+   Cuántos diodos se montan y cuándo. La fecha buena es la de MONTAJE en la
+   pieza de mano: es cuando se hace el trabajo. La de compra sólo dice cuándo
+   entró en almacén. Se calcula aquí, de la misma tabla de diodos que ya lleva
+   la página; no hace falta dato nuevo. */
+(function(){
+  if(!document.getElementById("pm-mz")) return;
+  var SNi=0,MOi=1,PAi=2,HPi=3,CSi=4,CLi=5,SIi=13,FIi=15,HOi=16,FLi=17,MTi=18,CPi=19;
+  var V=D.dio.voc, FS=D.dio.filas;
+  var fam=function(s){ var m=/^([A-Za-z0-9]+)-/.exec(s||""); return m?m[1]:"otros" };
+  var PA={original:"de origen", cambio:"recambio", "sin montar":"sin montar"};
+  var P=[], sinFecha=0;
+  FS.forEach(function(r){
+    var f=r[MTi];
+    if(!f || !/^\d{4}-\d{2}-\d{2}/.test(String(f))){ sinFecha++; return }
+    var dt=new Date(f+"T12:00:00"); if(isNaN(dt)){ sinFecha++; return }
+    P.push({sn:r[SNi], fam:fam(r[SNi]), modelo:V[r[MOi]]||"", papel:V[r[PAi]]||"",
+            f:String(f), compra:r[CPi]||"", a:+String(f).slice(0,4), m:+String(f).slice(5,7),
+            d:+String(f).slice(8,10), dow:dt.getDay(), t:dt.getTime(),
+            hp:r[HPi]||"", cs:r[CSi]||"", cli:V[r[CLi]]||"", sit:V[r[SIi]]||"",
+            fi:V[r[FIi]]||"", ho:V[r[HOi]]||"", fl:r[FLi]});
+  });
+  if(!P.length) return;
+  var MES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  var DOW=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  var CAB=["Diodo","Familia","Modelo","Papel","Comprado","Montado","Día de la semana",
+           "Pieza de mano","Consola","Cliente","Situación","Fichero","Hoja","Fila"];
+  var fil=function(p){ return [p.sn,p.fam,p.modelo,(PA[p.papel]||p.papel),p.compra||"",
+    p.f,DOW[p.dow],p.hp||"",p.cs||"",p.cli||"",p.sit,p.fi,p.ho,p.fl] };
+  var ANIOS=[]; P.forEach(function(p){ if(ANIOS.indexOf(p.a)<0) ANIOS.push(p.a) }); ANIOS.sort();
+  var porFam={}; P.forEach(function(p){ (porFam[p.fam]=porFam[p.fam]||[]).push(p) });
+  var FAMS=Object.keys(porFam).sort(function(a,b){ return porFam[b].length-porFam[a].length });
+  var TON=["var(--r1)","var(--r2)","var(--r3)","var(--r4)","var(--r5)"];
+  var tono=function(v,mx){ if(!v) return null;
+    var i=Math.min(4, Math.floor(5*v/Math.max(1,mx)) - (v===mx?1:0)); return TON[Math.max(0,i)] };
+  var dias=function(l){ var s={}; l.forEach(function(p){s[p.f]=1}); return Object.keys(s).length };
+  var ver=function(titulo,l,que,calculo,accion,ir){
+    abreCifra({titulo:titulo, valor:n(l.length), que:que, calculo:calculo, accion:accion, ir:ir,
+      tabla:{titulo:"Los diodos", cab:CAB,
+        filas:l.slice().sort(function(a,b){return a.f<b.f?-1:1}).map(fil)},
+      fuentes:[["DIODOS.xlsx","hoja GENERAL · fecha de montaje y de compra"]]}) };
+
+  /* ---- matriz año x mes ---- */
+  (function(){
+    var cont=document.getElementById("pm-mz"), papel="", fm="";
+    var sp=document.getElementById("pm-pap");
+    sp.append(new Option("De origen y recambios",""), new Option("Sólo de origen","original"),
+              new Option("Sólo recambios","cambio"));
+    var sf=document.getElementById("pm-fam");
+    sf.append(new Option("Todas las familias",""));
+    FAMS.forEach(function(f){ sf.append(new Option(f+" ("+n(porFam[f].length)+")", f)) });
+    var filtra=function(){ return P.filter(function(p){
+      return (!papel||p.papel===papel) && (!fm||p.fam===fm) }) };
+    function pinta(){
+      var L=filtra(); cont.textContent="";
+      var cel={}, tA={}, tM={};
+      L.forEach(function(p){ var k=p.a+"-"+p.m; cel[k]=(cel[k]||0)+1;
+        tA[p.a]=(tA[p.a]||0)+1; tM[p.m]=(tM[p.m]||0)+1 });
+      var mx=1; Object.keys(cel).forEach(function(k){ if(cel[k]>mx) mx=cel[k] });
+      var t=el("table"); t.style.tableLayout="fixed"; t.style.width="100%";
+      var h=el("thead"), r=el("tr");
+      r.append(el("th","l","Año"));
+      MES.forEach(function(m){ r.append(el("th",null,m)) });
+      r.append(el("th",null,"Total"));
+      h.append(r); t.append(h);
+      var tb=el("tbody");
+      ANIOS.forEach(function(a){
+        var tr=el("tr"); tr.append(el("td","a",String(a)));
+        for(var m=1;m<=12;m++){
+          var v=cel[a+"-"+m]||0, td=el("td");
+          if(!v){ td.className="z"; td.textContent="·"; tr.append(td); continue }
+          td.style.background=tono(v,mx); td.textContent=n(v);
+          td.title=n(v)+" diodos montados en "+MES[m-1]+" de "+a;
+          td.style.cursor="pointer";
+          (function(a,m){ td.onclick=function(){
+            var l=L.filter(function(p){return p.a===a&&p.m===m});
+            ver("Montados en "+MES[m-1]+" de "+a, l,
+              "Diodos que entraron en una pieza de mano ese mes. La fecha es la de montaje, no la de compra.",
+              [["En el mes", n(l.length), true], ["en todo "+a, n(tA[a]||0)],
+               ["de origen", n(l.filter(function(p){return p.papel==="original"}).length)],
+               ["recambios", n(l.filter(function(p){return p.papel==="cambio"}).length)]]) } })(a,m);
+          tr.append(td);
+        }
+        var tt=el("td","b",n(tA[a]||0)); tt.style.cursor="pointer";
+        (function(a){ tt.onclick=function(){
+          var l=L.filter(function(p){return p.a===a});
+          ver("Montados en "+a, l, "Todos los diodos montados en el año.",
+            [["En el año", n(l.length), true],
+             ["de origen", n(l.filter(function(p){return p.papel==="original"}).length)],
+             ["recambios", n(l.filter(function(p){return p.papel==="cambio"}).length)],
+             ["días con montaje", n(dias(l))]]) } })(a);
+        tr.append(tt); tb.append(tr);
+      });
+      t.append(tb);
+      var tf=el("tfoot"), fr=el("tr"); fr.append(el("td","a","Total"));
+      for(var m=1;m<=12;m++){
+        var td=el("td","b",n(tM[m]||0)); td.style.cursor="pointer";
+        (function(m){ td.onclick=function(){
+          var l=L.filter(function(p){return p.m===m});
+          ver(MES[m-1]+", todos los años", l,
+            "Los diodos montados en ese mes sumando todos los años. Sirve para ver si el taller tiene estacionalidad.",
+            [[MES[m-1]+" en total", n(l.length), true],
+             ["media por año", (l.length/ANIOS.length).toFixed(1).replace(".",",")]]) } })(m);
+        fr.append(td);
+      }
+      fr.append(el("td","b",n(L.length)));
+      tf.append(fr); t.append(tf); cont.append(t);
+      document.getElementById("pm-res").textContent =
+        n(L.length)+" diodos · "+n(dias(L))+" días con montaje";
+    }
+    sp.addEventListener("change",function(){ papel=sp.value; pinta() });
+    sf.addEventListener("change",function(){ fm=sf.value; pinta() });
+    { var rp=document.getElementById("pm-rp");
+      rp.append(el("span",null,"volumen del mes:"));
+      TON.forEach(function(c){ var i=el("i"); i.style.background=c;
+        i.style.border="1px solid var(--li)"; rp.append(i) });
+      rp.append(el("span",null,"de poco a mucho")); }
+    document.getElementById("pm-av").textContent =
+      "La fecha es la de montaje del diodo en la pieza de mano, que es cuando se hace el trabajo; la de compra sólo dice cuándo entró en almacén. "
+      + "Quedan fuera "+n(sinFecha)+" diodos de los "+n(FS.length)+" comprados: están en stock o nadie apuntó cuándo se montaron, y no son ceros de producción. "
+      + "El año en curso está incompleto por definición: no lo compares en total con los cerrados, compara mes contra mes.";
+    pinta();
+  })();
+
+  /* ---- matriz mes x día ---- */
+  (function(){
+    var cont=document.getElementById("pd-mz"), anio=ANIOS[ANIOS.length-1], fm="";
+    var sa=document.getElementById("pd-anio");
+    ANIOS.slice().reverse().forEach(function(a){ sa.append(new Option(String(a),String(a))) });
+    sa.value=String(anio);
+    var sf=document.getElementById("pd-fam");
+    sf.append(new Option("Todas las familias",""));
+    FAMS.forEach(function(f){ sf.append(new Option(f,f)) });
+    var filtra=function(){ return P.filter(function(p){ return p.a===anio && (!fm||p.fam===fm) }) };
+    function pinta(){
+      var L=filtra(); cont.textContent="";
+      var cel={}, tM={};
+      L.forEach(function(p){ var k=p.m+"-"+p.d; cel[k]=(cel[k]||0)+1; tM[p.m]=(tM[p.m]||0)+1 });
+      var mx=1; Object.keys(cel).forEach(function(k){ if(cel[k]>mx) mx=cel[k] });
+      var t=el("table"); t.style.tableLayout="fixed"; t.style.width="100%"; t.style.fontSize="10.5px";
+      var h=el("thead"), r=el("tr"); r.append(el("th","l","Mes"));
+      for(var d=1;d<=31;d++) r.append(el("th",null,String(d)));
+      r.append(el("th",null,"Total")); h.append(r); t.append(h);
+      var tb=el("tbody");
+      for(var m=1;m<=12;m++){
+        var tr=el("tr"); tr.append(el("td","a",MES[m-1]));
+        for(var d=1;d<=31;d++){
+          var v=cel[m+"-"+d]||0, td=el("td"); td.style.padding="4px 0";
+          if(!v){ td.className="z"; td.textContent="·"; tr.append(td); continue }
+          td.style.background=tono(v,mx); td.textContent=String(v); td.style.cursor="pointer";
+          td.title=v+" diodos el "+d+" de "+MES[m-1]+" de "+anio;
+          (function(m,d){ td.onclick=function(){
+            var l=L.filter(function(p){return p.m===m&&p.d===d});
+            ver(d+" de "+MES[m-1]+" de "+anio, l, "Los diodos montados ese día concreto.",
+              [["Ese día", n(l.length), true], ["en el mes", n(tM[m]||0)],
+               ["día de la semana", DOW[new Date(anio,m-1,d).getDay()]]]) } })(m,d);
+          tr.append(td);
+        }
+        var tt=el("td","b", tM[m]?n(tM[m]):"—");
+        if(tM[m]){ tt.style.cursor="pointer";
+          (function(m){ tt.onclick=function(){
+            var l=L.filter(function(p){return p.m===m});
+            ver(MES[m-1]+" de "+anio, l, "Los diodos montados ese mes.",
+              [["En el mes", n(l.length), true], ["días con montaje", n(dias(l))]]) } })(m) }
+        tr.append(tt); tb.append(tr);
+      }
+      t.append(tb); cont.append(t);
+      var nd=dias(L);
+      document.getElementById("pd-res").textContent =
+        n(L.length)+" diodos en "+n(nd)+" días"+(nd?" · "+(L.length/nd).toFixed(1).replace(".",",")+" por día activo":"");
+    }
+    sa.addEventListener("change",function(){ anio=+sa.value; pinta() });
+    sf.addEventListener("change",function(){ fm=sf.value; pinta() });
+    { var rp=document.getElementById("pd-rp");
+      rp.append(el("span",null,"diodos en el día:"));
+      TON.forEach(function(c){ var i=el("i"); i.style.background=c;
+        i.style.border="1px solid var(--li)"; rp.append(i) });
+      rp.append(el("span",null,"un punto es un día sin montaje")); }
+    pinta();
+  })();
+
+  /* ---- análisis: KPIs y fechas dudosas ---- */
+  (function(){
+    var g=document.getElementById("ap-k"); if(!g) return;
+    var porMes={}; P.forEach(function(p){ var k=p.f.slice(0,7); (porMes[k]=porMes[k]||[]).push(p) });
+    var mesesK=Object.keys(porMes).sort();
+    var ultimo=P.reduce(function(a,b){return a.f>b.f?a:b}).f;
+    var hoy=new Date(ultimo+"T12:00:00").getTime(), DIA=864e5;
+    var vent=function(a,b){ return P.filter(function(p){ return p.t>a && p.t<=b }) };
+    var v90=vent(hoy-90*DIA,hoy), v90a=vent(hoy-180*DIA,hoy-90*DIA);
+    var r90=v90.length/Math.max(1,dias(v90)), r90a=v90a.length/Math.max(1,dias(v90a));
+    var v12=vent(hoy-365*DIA,hoy), v12a=vent(hoy-730*DIA,hoy-365*DIA);
+    var pct=function(a,b){ return b? Math.round(100*(a-b)/b) : null };
+    var txt=function(v){ return v==null?"sin comparable"
+      : Math.abs(v)<3 ? "igual que el periodo anterior"
+      : (v>0?"▲ ":"▼ ")+Math.abs(v)+" %" };
+    var famTop=FAMS[0], concen=Math.round(100*porFam[famTop].length/P.length);
+
+    /* rango de meses del calendario, para que un mes a cero se vea */
+    var rango=[]; { var p0=mesesK[0].split("-"), p1=mesesK[mesesK.length-1].split("-");
+      var y=+p0[0], m=+p0[1], y1=+p1[0], m1=+p1[1];
+      while(y<y1 || (y===y1 && m<=m1)){ rango.push(y+"-"+(m<10?"0":"")+m);
+        m++; if(m>12){ m=1; y++ } } }
+    var finde=P.filter(function(p){ return p.dow===0||p.dow===6 });
+    var antes=P.filter(function(p){ return p.compra && p.f < p.compra });
+    var vacios=rango.filter(function(k){ return !porMes[k] });
+    var cd={}; P.forEach(function(p){ cd[p.f]=(cd[p.f]||0)+1 });
+    var vals=Object.keys(cd).map(function(k){return cd[k]}).sort(function(a,b){return a-b});
+    var p95=vals[Math.floor(.95*vals.length)]||1;
+    var picos=Object.keys(cd).filter(function(f){ return cd[f]>p95 }).sort();
+    var dud=finde.length+antes.length;
+
+    var tar=[
+      ["Ritmo, últimos 90 días", r90.toFixed(1).replace(".",","),
+       txt(pct(r90,r90a))+" · "+n(v90.length)+" diodos en "+n(dias(v90))+" días",
+       function(){ ver("Ritmo de los últimos 90 días", v90,
+         "Diodos montados por día con montaje en los últimos 90 días de datos. Se mide sobre días activos, no sobre el calendario: los días a cero casi nunca son taller parado, son días sin apuntar.",
+         [["Diodos en 90 días", n(v90.length)], ["días con montaje", n(dias(v90))],
+          ["diodos por día activo", r90.toFixed(1).replace(".",","), true],
+          ["los 90 días anteriores", r90a.toFixed(1).replace(".",",")],
+          ["variación", (pct(r90,r90a)==null?"—":(pct(r90,r90a)>0?"+":"")+pct(r90,r90a)+" %")]],
+         null, ["v-proddia","Ver el día a día"]) }],
+      ["Producción, 12 meses", n(v12.length),
+       txt(pct(v12.length,v12a.length))+" · "+n(v12a.length)+" los 12 anteriores",
+       function(){ ver("Últimos 12 meses", v12,
+         "Diodos montados en los doce últimos meses con datos, contra los doce anteriores.",
+         [["Últimos 12 meses", n(v12.length), true], ["los 12 anteriores", n(v12a.length)],
+          ["variación", (pct(v12.length,v12a.length)==null?"—":(pct(v12.length,v12a.length)>0?"+":"")+pct(v12.length,v12a.length)+" %")],
+          ["de origen", n(v12.filter(function(p){return p.papel==="original"}).length)],
+          ["recambios", n(v12.filter(function(p){return p.papel==="cambio"}).length)]],
+         null, ["v-prodmes","Ver el mes a mes"]) }],
+      ["Concentración en "+famTop, concen+" %",
+       n(porFam[famTop].length)+" de "+n(P.length)+" montados",
+       function(){ abreCifra({titulo:"Concentración por familia de diodo", valor:concen+" %",
+         que:"Qué parte de todo lo que se monta es de una sola familia. Cuanto más concentrado, más expuesto está el taller a un problema de suministro o de calidad de ese número.",
+         calculo:FAMS.slice(0,6).map(function(f,i){
+           return [f, n(porFam[f].length)+" · "+Math.round(100*porFam[f].length/P.length)+" %", i===0] }),
+         tabla:{titulo:"Familias", cab:["Familia","Montados","% del total","De origen","Recambios","Primer montaje","Último"],
+           filas:FAMS.map(function(f){ var l=porFam[f];
+             return [f, l.length, Math.round(100*l.length/P.length)+" %",
+               l.filter(function(p){return p.papel==="original"}).length,
+               l.filter(function(p){return p.papel==="cambio"}).length,
+               l.reduce(function(a,b){return a.f<b.f?a:b}).f,
+               l.reduce(function(a,b){return a.f>b.f?a:b}).f] })},
+         fuentes:[["DIODOS.xlsx","prefijo del número de serie"]],
+         accion:"Con "+concen+" % en una sola familia, una rotura de suministro de "+famTop+" para el taller. Mirar el stock de esa familia antes que el total.",
+         ir:["v-fam","Ver el stock por familia"]}) }],
+      ["Fechas que no cuadran", n(dud),
+       n(finde.length)+" en fin de semana · "+n(antes.length)+" antes de comprarse",
+       function(){ ver("Fechas de montaje que no se sostienen", finde.concat(antes),
+         "Montajes en sábado o domingo, y montajes con fecha anterior a la compra del propio diodo. Lo segundo es imposible; lo primero puede ser cierto, pero no repartido por once años.",
+         [["Montados en fin de semana", n(finde.length)],
+          ["montados antes de comprarse", n(antes.length)],
+          ["total dudoso", n(dud), true],
+          ["% de la serie", (100*dud/P.length).toFixed(1).replace(".",",")+" %"]],
+         "Los anteriores a su propia compra son error seguro: una de las dos fechas está mal tecleada. Los de fin de semana, preguntar al SAT: si no se trabajó ese día, la fecha apuntada no es la del montaje y la serie diaria pierde precisión.") }]
+    ];
+    g.textContent="";
+    tar.forEach(function(t){
+      var k=el("div","kp");
+      k.append(el("div","e",t[0]));
+      var b=el("div","b",t[1]); if(!/^[\d.,]/.test(t[1])) b.style.fontSize="26px";
+      k.append(b, el("div","p",t[2]));
+      cifraPinchable(k, t[3]); g.append(k);
+    });
+
+    /* barras por mes */
+    var cm=document.getElementById("ap-ms"); cm.textContent="";
+    var ult=rango.slice(-24), mxm=1;
+    ult.forEach(function(k){ var v=(porMes[k]||[]).length; if(v>mxm) mxm=v });
+    ult.forEach(function(k,i){
+      var l=porMes[k]||[];
+      var d=el("div","m"), z=el("div","z"), b=el("b");
+      b.style.height=Math.max(2,Math.round(100*l.length/mxm))+"%";
+      if(!l.length) d.className="m cero";
+      z.append(b); d.append(z); d.append(el("s",null,k.slice(2)));
+      var prev=ult.slice(Math.max(0,i-3),i).map(function(x){return (porMes[x]||[]).length});
+      var m3=prev.length? prev.reduce(function(a,b){return a+b},0)/prev.length : null;
+      d.title=k+": "+l.length+" diodos"+(m3!=null?" · media de los 3 anteriores: "+m3.toFixed(1).replace(".",","):"");
+      d.style.cursor="pointer";
+      d.onclick=function(){ ver("Montados en "+k, l, "Los diodos montados en el mes.",
+        [["En el mes", n(l.length), true]]
+        .concat(m3!=null?[["media de los 3 meses anteriores", m3.toFixed(1).replace(".",",")],
+          ["contra esa media", (m3? ((l.length-m3)>=0?"+":"")+Math.round(100*(l.length-m3)/m3)+" %":"—")]]:[])
+        .concat([["de origen", n(l.filter(function(p){return p.papel==="original"}).length)],
+                 ["recambios", n(l.filter(function(p){return p.papel==="cambio"}).length)],
+                 ["días con montaje", n(dias(l))]]),
+        null, ["v-prodmes","Ver la matriz mes a mes"]) };
+      cm.append(d);
+    });
+
+    /* rarezas */
+    var rr=document.getElementById("ap-rr"); rr.textContent="";
+    var rows=[
+      ["Montados en fin de semana", finde.length, function(){
+        ver("Montados en sábado o domingo", finde,
+          "Diodos cuya fecha de montaje cae en fin de semana. Puede ser real, pero si son muchos lo normal es que la fecha apuntada no sea la del montaje.",
+          [["En sábado", n(finde.filter(function(p){return p.dow===6}).length)],
+           ["en domingo", n(finde.filter(function(p){return p.dow===0}).length)],
+           ["total", n(finde.length), true],
+           ["% de la serie", (100*finde.length/P.length).toFixed(2).replace(".",",")+" %"]],
+          "Preguntar al SAT si se trabajó esos días. Si no, la fecha de esas filas no es la del montaje y hay que corregirla antes de usar la serie diaria.") }],
+      ["Montados antes de comprarse", antes.length, function(){
+        ver("Montados antes de su fecha de compra", antes,
+          "El diodo consta montado en una pieza de mano antes de la fecha en que consta comprado. Es imposible: una de las dos fechas está mal.",
+          [["Casos", n(antes.length), true]],
+          "Error seguro, no interpretación. Corregir en DIODOS la fecha que esté mal; mientras tanto estas filas ensucian la serie de producción y la vida del diodo.") }],
+      ["Meses sin ningún montaje", vacios.length, function(){
+        abreCifra({titulo:"Meses del rango sin ningún montaje", valor:n(vacios.length),
+          que:"Meses que caen dentro del periodo con datos pero en los que no consta ni un solo montaje. O el taller paró del todo, o ese mes no se apuntó.",
+          calculo:[["Meses en el rango", n(rango.length)],
+                   ["con al menos un montaje", n(rango.length-vacios.length)],
+                   ["sin ninguno", n(vacios.length), true]],
+          tabla:{titulo:"Los meses vacíos", cab:["Mes","Mes anterior","Mes siguiente"],
+            filas:vacios.map(function(k){ var i=rango.indexOf(k), a=rango[i-1], b=rango[i+1];
+              return [k, a?(a+": "+((porMes[a]||[]).length)):"—", b?(b+": "+((porMes[b]||[]).length)):"—"] })},
+          fuentes:[["DIODOS.xlsx","fecha de montaje"]],
+          accion:"Un mes a cero entre dos meses llenos casi nunca es paro de taller: es un mes sin apuntar. Confirmarlo antes de leer cualquier caída de la serie."}) }],
+      ["Días con volumen atípico", picos.length, function(){
+        abreCifra({titulo:"Días muy por encima de lo normal", valor:n(picos.length),
+          que:"Días con más diodos montados que el 95 % de los días de la serie. Puede ser una tanda de fabricación real, o que se apuntaran de golpe y la fecha sea la de la carga en el fichero.",
+          calculo:[["Días con montaje", n(Object.keys(cd).length)],
+                   ["umbral (percentil 95)", n(p95)+" diodos"],
+                   ["días por encima", n(picos.length), true]],
+          tabla:{titulo:"Los días", cab:["Día","Día de la semana","Diodos","Familias"],
+            filas:picos.slice().reverse().map(function(f){
+              var l=P.filter(function(p){return p.f===f}), fs={};
+              l.forEach(function(p){fs[p.fam]=1});
+              return [f, DOW[new Date(f+"T12:00:00").getDay()], l.length, Object.keys(fs).sort().join(" ")] })},
+          fuentes:[["DIODOS.xlsx","fecha de montaje"]],
+          accion:"Mirar dos o tres: si todos los diodos son de la misma familia y correlativos, es una tanda real. Si son de todo tipo, es una carga al fichero.",
+          ir:["v-proddia","Ver el día a día"]}) }]
+    ];
+    var mxr=1; rows.forEach(function(r){ if(r[1]>mxr) mxr=r[1] });
+    rows.forEach(function(r){
+      var d=el("div","f");
+      d.append(el("div","nm",r[0]), el("div","vl",n(r[1])));
+      var b=el("div","bar"), i=el("i");
+      i.style.width=(100*r[1]/mxr)+"%";
+      i.style.background = r[1] ? "var(--c3)" : "var(--li)";
+      b.append(i); d.append(b);
+      cifraPinchable(d, r[2]); rr.append(d);
+    });
+  })();
 })();
 
 function curva(series, W, H){
