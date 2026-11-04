@@ -544,7 +544,7 @@ document.getElementById("ft").textContent=
       b.append(fila);
     });
     t.append(b);
-    var f2=el("tfoot"), fr=el("tr"); fr.append(el("td",null,"TOTAL con fecha de compra"+(trSin?" (más "+n(trSin)+" rotos sin compra reg., fuera del %)":"")));
+    var f2=el("tfoot"), fr=el("tr"); var tt0=el("td",null,"TOTAL"+(trSin?" *":"")); if(trSin) tt0.title="Solo diodos con fecha de compra. Otros "+n(trSin)+" rotos sin compra registrada no entran en el %."; fr.append(tt0);
     m.cols.forEach(function(c,j){ fr.append(el("td",null, tcol[j]?n(tcol[j]):"–")) });
     fr.append(el("td",null,n(tr2)), el("td",null,n(tc)),
               el("td",null, tc?(tr2*100/tc).toFixed(1).replace(".",",")+" %":"—"));
@@ -1736,4 +1736,505 @@ function tabla(cab, filas){
   verBloque(b0,v0);
 })();
 
-</script></body></html>
+</script><!-- ===== Cuadro de una pantalla (prototipo 04-11-2026) =====
+     Capa de presentación encima de la página de siempre: no recalcula nada.
+     Mueve a seis tarjetas las gráficas y cifras que ya pinta la página, y deja
+     el detalle en un panel lateral con, como mucho, una fila de opciones.
+     Vuelta atrás: quitar este bloque. -->
+<style>
+:root{--gr:#F1F3F2;--su:#FFFFFF;--s2:#F4F6F5;--l2:#E6EAE8;--li:#D9DEDB;
+--sh:0 1px 2px rgba(16,24,20,.05),0 10px 30px -16px rgba(16,24,20,.22)}
+header,#blq,#mn,#sb{display:none!important}
+[hidden]{display:none!important}
+#cuadro{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:12px;
+  padding-block:14px 16px;padding-left:max(20px,env(safe-area-inset-left,0px));
+  padding-right:max(20px,env(safe-area-inset-right,0px));max-width:1500px;width:100%;margin:0 auto}
+.cb{display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:0 0 auto}
+.cb h1{font:700 24px/1.1 "IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;margin:0}
+.cb .fe{font:500 12.5px "IBM Plex Sans",sans-serif;color:var(--mu)}
+.cb .fe b{color:var(--ink);font-weight:600}
+.cb .bus{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--su);
+  border:1px solid var(--li);border-radius:999px;padding:0 6px 0 14px;box-shadow:var(--sh)}
+.cb .bus input{border:0;outline:0;background:transparent;font:500 13.5px "IBM Plex Sans",sans-serif;
+  color:var(--ink);width:min(300px,52vw);padding:9px 0}
+.cb .bus:focus-within{border-color:var(--ac)}
+.bt{font:600 13px "IBM Plex Sans",sans-serif;border:1px solid var(--li);background:var(--su);color:var(--i2);
+  border-radius:999px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.bt:hover,.bt:focus-visible{border-color:var(--ac);color:var(--ac);outline:0}
+.bt.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.bt.av{border-color:#E3C9A8;background:#FBF4EA;color:#8A4B12}
+/* fila de cifras: 8 casillas, una sola línea */
+.kf{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;flex:0 0 auto}
+.kf .kp{padding:11px 13px 10px;border-radius:14px;gap:1px;min-width:0}
+.kf .kp .e{font-size:11.5px;line-height:1.25;min-height:2.5em}
+.kf .kp .b{font:600 26px/1.1 "IBM Plex Sans",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kf .kp .p{font:400 11px/1.3 "IBM Plex Sans",sans-serif;margin-top:3px;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.kf .grp{grid-column:span 4;font:600 10.5px "IBM Plex Mono",monospace;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--fa);margin-bottom:-4px}
+/* seis tarjetas, dos filas */
+.tj{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:minmax(0,1.45fr) minmax(0,1fr);gap:12px}
+.tj .pc{padding:13px 16px 14px;border-radius:16px}
+.tj .pc .hd{display:flex;align-items:center;gap:8px 10px;margin-bottom:8px;flex-wrap:wrap;min-width:0}
+.seg{max-width:100%;overflow-x:auto;scrollbar-width:none}.seg button{white-space:nowrap;flex:0 0 auto}
+.tj .pc h3{font:600 14.5px "IBM Plex Sans",sans-serif}
+.tj .pc .nt{margin:0;font-size:11.5px}
+.tj .pc .ir{margin-left:auto;font:600 12px "IBM Plex Sans",sans-serif;color:var(--ac);background:none;
+  border:0;cursor:pointer;padding:2px 0;white-space:nowrap}
+.tj .pc .ir:hover{text-decoration:underline}
+.tj .cu{flex:1 1 auto;min-height:0;overflow:auto}
+.tj .cu.nos{overflow:hidden}
+.tj .an{grid-column:span 3}
+.tj>.pc{min-width:0}
+.tj .an .cu>div{display:flex;flex-direction:column;min-height:0}
+.tj .an .selc{margin-bottom:6px;gap:8px}
+.tj .an .selc select{padding:5px 9px;font-size:12px}
+.tj .an .rampa{margin-top:6px;font-size:11px}
+.tj .an #ed-mz,.tj .an #mz,.tj .an #dz{border-radius:12px}
+.tj .an th,.tj .an td{padding:1px 2px!important;font-size:11px!important;line-height:16px}
+.tj .an table{border-spacing:1px}
+.tj .an .rampa{display:none}
+.cvw{height:100%;display:flex;flex-direction:column}
+.cvz{flex:1 1 auto;min-height:180px;position:relative}
+.cvz svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.cvz .ej{stroke:var(--l2)}.cvz .et{font:500 10.5px "IBM Plex Mono",monospace;fill:var(--fa)}
+.cvz .ln{fill:none;stroke-width:2;stroke-linejoin:round;transition:opacity .12s,stroke-width .12s;cursor:pointer}
+.cvz .lb{font:600 11px "IBM Plex Sans",sans-serif;cursor:pointer}
+.cvz.hov .g{opacity:.15}.cvz.hov .g.on{opacity:1}.cvz.hov .g.on .ln{stroke-width:3.2}
+.cvn{flex:0 0 auto;font-size:11.5px;color:var(--fa);margin-top:6px}
+.wf{display:flex;flex-direction:column;gap:2px}
+.wf .r{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.6fr) 44px;gap:8px;align-items:center;cursor:pointer;
+  border-radius:8px;padding:2px 4px}
+.wf .r:hover{background:var(--s2)}
+.wf .nm{font-size:11.5px;color:var(--i2);line-height:1.15}
+.wf .r.tot .nm{font-weight:600;color:var(--ink)}
+.wf .tk{position:relative;height:15px}
+.wf .tk i{position:absolute;top:0;bottom:0;border-radius:4px}
+.wf .tk i.c{border-left:1px dashed var(--fa);top:-6px;bottom:-6px;width:0;border-radius:0}
+.wf .vl{font:600 13px "IBM Plex Sans",sans-serif;text-align:right;font-variant-numeric:tabular-nums}
+.wf .r.res .vl{color:var(--mu)}
+.wf .pie{font-size:10.5px;color:var(--fa);margin-top:2px;line-height:1.3}
+dialog#md{max-width:min(1060px,95vw)}
+.hm table{min-width:0;width:100%;table-layout:fixed;border-spacing:2px;padding:0}
+.hm th{font:500 10px "IBM Plex Mono",monospace;padding:3px 1px;color:var(--mu)}
+.hm th.l{text-align:left;width:24%}.hm th.n{width:7%}
+.hm td{padding:3px 1px!important;font:500 11px "IBM Plex Mono",monospace;border-radius:4px}
+.hm td.l{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:11.5px;color:var(--i2);overflow:hidden;text-overflow:ellipsis}
+.hm td.v{cursor:pointer}.hm td.v:hover{box-shadow:inset 0 0 0 2px var(--ink)}
+.hm td.t{background:var(--as);font-weight:600}.hm td.e{color:var(--mu)}
+.hm .pie{font-size:11px;color:var(--fa);margin-top:4px}
+.sct{position:relative;height:100%;min-height:200px}
+.sct svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.sct .ej{stroke:var(--l2)}.sct .et{font:500 10px "IBM Plex Mono",monospace;fill:var(--fa)}
+.sct .md{stroke:var(--fa);stroke-dasharray:4 3}
+.sct .bb{cursor:pointer;fill-opacity:.55;stroke-width:1.5}.sct .bb:hover{fill-opacity:.9}
+.sct .nb{font:600 10.5px "IBM Plex Sans",sans-serif;fill:var(--i2);pointer-events:none}
+.tj .lyc{margin-top:6px;gap:10px}
+.seg{display:inline-flex;background:var(--s2);border-radius:999px;padding:2px;gap:2px}
+.seg button{font:600 11.5px "IBM Plex Sans",sans-serif;border:0;background:none;color:var(--mu);
+  padding:4px 10px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--su);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.tj .track{height:38px;margin-bottom:6px}
+.tj .track div{border-radius:6px}
+.tj .lg{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.tj .lg div{padding:5px 0;font-size:12px}
+.tj .lg b{font-size:15px}
+.cpie{flex:0 0 auto;font:400 11px "IBM Plex Sans",sans-serif;color:var(--fa)}
+/* panel de detalle */
+#velo{position:fixed;inset:0;background:rgba(14,20,17,.38);z-index:30;opacity:0;pointer-events:none;transition:opacity .18s}
+#velo.on{opacity:1;pointer-events:auto}
+#hoja{position:fixed;top:0;right:0;bottom:0;width:min(1160px,100vw);background:var(--gr);z-index:31;
+  display:flex;flex-direction:column;box-shadow:-20px 0 60px -30px rgba(0,0,0,.45);
+  transform:translateX(102%);transition:transform .22s ease;padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+#hoja.on{transform:none}
+@media (prefers-reduced-motion:reduce){#hoja,#velo{transition:none}}
+.hh{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 22px 10px;flex:0 0 auto;
+  padding-right:max(22px,env(safe-area-inset-right,0px))}
+.hh h2{font:700 20px/1.1 "IBM Plex Sans Condensed",sans-serif;margin:0}
+.hh .seg{background:var(--su);border:1px solid var(--l2)}
+.hh .seg button{font-size:12.5px;padding:6px 12px}
+.hh .seg button.on{background:var(--ac);color:#fff}
+.hh .x{margin-left:auto}
+#hoja #lz{flex:1 1 auto;min-height:0;display:flex}
+#hoja #lz>.w{max-width:none;padding:4px 22px 18px;padding-right:max(22px,env(safe-area-inset-right,0px))}
+#hoja section.on>.sh{display:none}
+@media(max-width:1180px){.kf{grid-template-columns:repeat(4,minmax(0,1fr))}.kf .grp{display:none}}
+@media(max-width:980px){
+  html,body{overflow:auto;height:auto}
+  .tj{grid-template-columns:minmax(0,1fr);grid-template-rows:none}.tj>.pc{min-width:0}.tj .an{grid-column:auto}.tj .an .cu{overflow:auto}
+  .tj .pc{min-height:300px}
+  .kf{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cb .bus{margin-left:0;width:100%}.cb .bus input{flex:1 1 auto;min-width:0;width:auto}
+}
+</style>
+
+<div id="cuadro">
+  <div class="cb">
+    <h1>Control de Diodos</h1>
+    <span class="fe">datos al <b id="c-fe"></b></span><button class="bt" id="c-act" type="button" title="Busca si hay datos más nuevos publicados">Actualizar</button><span class="fe" id="c-act-m" role="status"></span>
+    <label class="bus" for="c-q"><input id="c-q" type="search" autocomplete="off" spellcheck="false"
+      placeholder="Busca un diodo, pieza, consola o cliente"><button class="bt pri" id="c-qb" type="button">Buscar</button></label>
+    <button class="bt av" id="c-nc" type="button">Lo que no cuadra</button>
+    <button class="bt" id="c-todo" type="button">Todo el detalle</button>
+  </div>
+  <div class="kf" id="c-kf">
+    <div class="grp">El parque</div><div class="grp">Cómo aguantan</div>
+  </div>
+  <div class="tj">
+    <div class="pc an"><div class="hd"><h3>Averías por añada</h3>
+      <span class="seg" id="c-7s"><button class="on" data-k="cv" data-v="v-edad">En curvas</button><button data-k="ed" data-v="v-edad">Por edad del equipo</button><button data-k="an" data-v="v-anadas">Por año natural</button><button data-k="di" data-v="v-diodo">Por añada del diodo</button><button data-k="hm" data-v="v-anadas">Mapa de calor por cliente</button></span>
+      <button class="ir" id="c-7i" data-v="v-edad">Detalle ›</button></div>
+      <div class="cu" id="c-7"><div id="c-7cv" class="cvw"><div class="cvz" id="cv-z"></div><div class="cvn">% de equipos de cada añada que ya habían roto al menos un diodo, según los años que llevaban en el cliente. Solo se pinta una edad cuando al menos el 80 % de la añada ha llegado a ella. Pincha un punto para ver el cálculo y los diodos.</div></div><div id="c-7ed" hidden></div><div id="c-7an" hidden></div><div id="c-7di" hidden></div><div id="c-7hm" hidden><div class="hm" id="hm"></div></div></div></div>
+    <div class="pc"><div class="hd"><h3>Quién los gasta</h3>
+      <button class="ir" data-v="v-clientes">Detalle ›</button></div>
+      <span class="seg" id="c-3s" style="align-self:flex-start;margin-bottom:8px"><button class="on" data-k="t">Tasa 12 meses</button><button data-k="a">Acumulados</button><button data-k="s">Tamaño y tasa</button></span>
+      <div class="cu" id="c-3"><div class="sct" id="sct" hidden></div></div></div>
+    <div class="pc"><div class="hd"><h3>Cambios de diodo por año</h3><span class="nt">pincha un año · 2026 sin cerrar</span>
+      <button class="ir" data-v="v-cambios">Detalle ›</button></div><div class="cu nos" id="c-1"></div></div>
+    <div class="pc"><div class="hd"><h3>Cuánto aguanta un diodo</h3>
+      <button class="ir" data-v="a-vida">Detalle ›</button></div><div class="cu nos" id="c-2"></div><div id="c-2l"></div></div>
+    <div class="pc"><div class="hd"><h3>Producción del taller</h3><span class="nt">al mes</span>
+      <button class="ir" data-v="a-prod">Detalle ›</button></div><div class="cu nos" id="c-4"></div></div>
+    <div class="pc"><div class="hd">
+      <span class="seg" id="c-8s"><button class="on" data-k="5" data-v="v-cobro">Quién paga los cambios</button><button data-k="6" data-v="v-censo">Dónde están</button></span>
+      <button class="ir" id="c-8i" data-v="v-cobro">Detalle ›</button></div>
+      <div class="cu" id="c-5"></div><div class="cu" id="c-6" hidden></div></div>
+  </div>
+  <div class="cpie" id="c-pie"></div>
+</div>
+<div id="velo"></div>
+<aside id="hoja" aria-label="Detalle" aria-hidden="true">
+  <div class="hh"><h2 id="h-t"></h2><div class="seg" id="h-s"></div><button class="bt x" id="h-x" type="button">Cerrar</button></div>
+</aside>
+
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var lz=$("lz"), cuadro=$("cuadro"), hoja=$("hoja"), velo=$("velo");
+  document.body.insertBefore(cuadro, lz);
+  hoja.appendChild(lz);
+
+  /* las vistas de detalle, en cinco grupos (antes: 2 bloques, 6 menús, 13 submenús) */
+  var G=[
+    {t:"Los diodos", v:[["v-uno","Uno a uno"],["v-censo","Dónde están"],["v-fam","Por familia"],["v-parque","El parque"]]},
+    {t:"Cambios", v:[["v-cambios","Por año"],["v-clientes","Por cliente"],["v-cobro","Quién pagó"],["a-cobro","Mes a mes"],["a-prem","Prematuros"]]},
+    {t:"Vida y añadas", v:[["a-vida","Vida del diodo"],["v-edad","Por edad del equipo"],["v-anadas","Por año natural"],["v-diodo","Por añada del diodo"]]},
+    {t:"Producción", v:[["a-prod","Ritmo"],["v-prodmes","Mes a mes"],["v-proddia","Día a día"]]},
+    {t:"Lo que no cuadra", v:[["v-calidad","Lo que no cuadra"]]}
+  ];
+  var ALIAS={"g-diodos":"v-uno","g-cambios":"v-cambios","g-prod":"v-prodmes","g-anadas":"v-edad",
+             "v-portada":null,"a-portada":null};
+
+  /* préstamo de piezas: la gráfica vive en la tarjeta y vuelve a su sitio
+     mientras su vista está abierta en el panel */
+  var P=[];
+  function presta(id, dest){
+    var e=typeof id==="string"?$(id):id; if(!e) return; id=e.id||"pieza";
+    var m=document.createComment("sitio de "+id); e.parentNode.insertBefore(m,e);
+    var sec=e.closest("section"); P.push({e:e,m:m,d:dest,s:sec?sec.id:null});
+    dest.appendChild(e);
+  }
+  function aCasa(vista){ P.forEach(function(p){
+    if(p.s===vista){ p.m.parentNode.insertBefore(p.e,p.m.nextSibling) } else if(p.e.parentNode!==p.d){ p.d.appendChild(p.e) } }) }
+
+  $("c-fe").textContent=(D.gen||"").replace(/^(\d{4})-(\d\d)-(\d\d)/,"$3/$2/$1");
+  /* Actualizar: mira si GitHub ya tiene una página con datos más nuevos y, si la hay, la carga.
+     Los datos se rehacen solos los lunes a las 8:00 (tarea «Control de Diodos: refresco semanal»). */
+  $("c-act").onclick=function(){
+    var b=this, m=$("c-act-m"); b.disabled=true; b.textContent="Comprobando…"; m.textContent="";
+    fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"}).then(function(r){return r.text()}).then(function(t){
+      var g=null, re=/"gen":"(\d{4}-\d\d-\d\d \d\d:\d\d)"/g, x; while((x=re.exec(t))) g=x[1];
+      if(g && g>(D.gen||"")){ m.textContent="Hay datos del "+g.slice(8,10)+"/"+g.slice(5,7)+": cargando…"; location.reload(); return }
+      b.disabled=false; b.textContent="Actualizar";
+      m.textContent="Ya tienes los últimos. Se rehacen solos los lunes a las 8:00.";
+    }).catch(function(){ location.reload() });
+  };
+  var kf=$("c-kf");
+  [].slice.call($("pk").children).concat([].slice.call($("apk").children)).forEach(function(k){kf.appendChild(k)});
+  presta("pm",$("c-1"));
+  presta("acv",$("c-2")); presta("aly",$("c-2l"));
+  presta("atz",$("c-3")); presta("pc2",$("c-3")); $("pc2").hidden=true;
+  presta("ap-ln",$("c-4"));
+  presta("ts",$("c-6")); presta("ls",$("c-6"));
+  [["ed","v-edad",["ed-mz","ed-rp"]],["an","v-anadas",["mz","rp"]],["di","v-diodo",["dz","rd"]]].forEach(function(a){
+    var d=$("c-7"+a[0]); presta(document.querySelector("#"+a[1]+" .selc"),d);
+    a[2].forEach(function(i){presta(i,d)}); });
+  function seg(sid, fn){ [].forEach.call($(sid).children,function(b){b.onclick=function(){
+    [].forEach.call($(sid).children,function(x){x.classList.toggle("on",x===b)}); fn(b);
+    window.dispatchEvent(new Event("resize")); }}) }
+  /* --- cascada: quién paga los cambios (solo recuentos, de D.cob) --- */
+  (function(){
+    var C=D.cob||{}, g=function(k){return C[k]||0};
+    var tot=Object.keys(C).reduce(function(a,k){return a+C[k]},0);
+    var gar=g("En garantía"), man=g("Cubierto por mantenimiento"), sc=g("Sin coste"),
+        fac=g("Facturado al cliente"), sim=g("Fuera de garantía, importe sin informar"), sd=g("Sin dato");
+    var nocub=tot-gar-man-sc, abierto=nocub-fac;
+    var VERDE="#00998A", AZUL="#3B62B5", GRIS="#B9C1BC", NAR="#C05621", ROJO="#A52A2A";
+    /* [etiqueta, desde, hasta, color, clase, texto del valor, explicación] */
+    var F=[["Cambios trazados",0,tot,"var(--ink)","tot",n(tot),"Todos los cambios de diodo con número de serie."],
+      ["En garantía",tot-gar,tot,VERDE,"res","−"+n(gar),"Los cubre la garantía."],
+      ["Cubiertos por mantenimiento",tot-gar-man,tot-gar,AZUL,"res","−"+n(man),"Los cubre el contrato de mantenimiento."],
+      ["Sin coste",nocub,nocub+sc,GRIS,"res","−"+n(sc),"Cambios sin coste."],
+      ["Ni garantía ni mantenimiento",0,nocub,"var(--i2)","tot",n(nocub),"Cambios que no cubre la garantía ni el mantenimiento."],
+      ["Facturados al cliente",abierto,nocub,"#2F6B4C","res","−"+n(fac),"Ya facturados al cliente."],
+      ["Sin cerrar",0,abierto,null,"tot",n(abierto),"Fuera de garantía sin importe informado ("+n(sim)+") y sin dato de quién paga ("+n(sd)+")."]];
+    var w=$("c-5"); w.textContent=""; var box=document.createElement("div"); box.className="wf"; w.appendChild(box);
+    var pc=function(v){return (100*v/tot)+"%"};
+    F.forEach(function(f){
+      var r=document.createElement("div"); r.className="r "+f[4]; r.title=f[6]; r.tabIndex=0; r.setAttribute("role","button");
+      var tk='<div class="tk">';
+      if(f[3]) tk+='<i style="left:'+pc(f[1])+';width:'+pc(f[2]-f[1])+';background:'+f[3]+'"></i>';
+      else tk+='<i style="left:0;width:'+pc(sim)+';background:'+NAR+'"></i><i style="left:'+pc(sim)+';width:'+pc(sd)+';background:'+ROJO+';opacity:.85"></i>';
+      tk+='</div>';
+      r.innerHTML='<div class="nm">'+f[0]+'</div>'+tk+'<div class="vl">'+f[5]+'</div>';
+      r.onclick=function(){abrir("v-cobro")}; r.onkeydown=function(e){if(e.key==="Enter")abrir("v-cobro")};
+      box.appendChild(r);
+    });
+    var pie=document.createElement("div"); pie.className="pie";
+    pie.innerHTML='<b style="color:'+NAR+'">■</b> '+n(sim)+' fuera de garantía sin importe · <b style="color:'+ROJO+'">■</b> '+n(sd)+' sin dato · pincha una fila';
+    box.appendChild(pie);
+  })();
+
+  /* --- curvas de averías por añada (de D.edad, misma regla del 80 % que la matriz) --- */
+  (function(){
+    var z=$("cv-z"), CE=(D.edad||[]).filter(function(c){return c[4][0]>=0.8});
+    var A0=CE.length?CE[0][0]:0, A1=CE.length?CE[CE.length-1][0]:1;
+    function color(a){ var t=(a-A0)/Math.max(1,A1-A0); /* antigua: clara · reciente: oscura */
+      return "hsl("+(176-t*6)+","+(45+t*40)+"%,"+(72-t*46)+"%)" }
+    function pinta(){
+      var W=z.clientWidth, H=z.clientHeight; if(W<120||H<100) return;
+      var ml=40, mr=46, mt=10, mb=22, K=9, mx=0;
+      CE.forEach(function(c){ for(var k=0;k<K;k++) if(c[4][k]>=0.8) mx=Math.max(mx,100*c[2][k]/c[1]) });
+      mx=Math.ceil(mx/5)*5||5;
+      var X=function(k){return ml+k*(W-ml-mr)/(K-1)}, Y=function(v){return mt+(1-v/mx)*(H-mt-mb)};
+      var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Curvas de averías por añada">';
+      for(var v=0;v<=mx;v+=5){ if(mx>20 && v%10) continue;
+        s+='<line class="ej" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="et" x="'+(ml-6)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v+' %</text>'; }
+      for(var k=0;k<K;k++) s+='<text class="et" x="'+X(k)+'" y="'+(H-6)+'" text-anchor="middle">'+((W-ml-mr)/(K-1)<55?(k+1)+(k===K-1?" años":""):(k===0?"1er año":(k+1)+" años"))+'</text>';
+      var ult=[];
+      CE.forEach(function(c){
+        var pts=[]; for(var k=0;k<K;k++){ if(c[4][k]<0.8) break; pts.push([k,100*c[2][k]/c[1]]) }
+        if(!pts.length) return;
+        var col=color(c[0]), d=pts.map(function(p,i){return (i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)}).join(" ");
+        var l=pts[pts.length-1];
+        ult.push({a:c[0],x:X(l[0]),y:Y(l[1]),v:l[1],k:l[0],col:col,n:c[1],r:c[2][l[0]]});
+        s+='<g class="g" data-a="'+c[0]+'"><path class="ln" d="'+d+'" stroke="'+col+'"/>'+
+           pts.map(function(p){return '<circle class="pt" data-a="'+c[0]+'" data-k="'+p[0]+'" cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="3.2" fill="'+col+'" style="cursor:pointer"><title>'+c[0]+' · '+(p[0]===0?"1er año":"≤"+(p[0]+1)+" años")+': '+(p[1].toFixed(1).replace(".",","))+' % ('+c[2][p[0]]+' de '+c[1]+' equipos)</title></circle>'}).join("")+'</g>';
+      });
+      /* etiquetas al final de cada línea, sin pisarse */
+      ult.sort(function(a,b){return a.y-b.y}); var prev=-99;
+      ult.forEach(function(u){ var y=Math.max(u.y,prev+11); prev=y;
+        s+='<text class="lb g" data-a="'+u.a+'" x="'+(u.x+6)+'" y="'+(y+4)+'" fill="'+u.col+'">'+u.a+'</text>' });
+      s+='</svg>'; z.innerHTML=s;
+      [].forEach.call(z.querySelectorAll(".g"),function(g){
+        g.addEventListener("mouseenter",function(){ z.classList.add("hov");
+          [].forEach.call(z.querySelectorAll(".g"),function(x){x.classList.toggle("on",x.dataset.a===g.dataset.a)}) });
+        g.addEventListener("mouseleave",function(){ z.classList.remove("hov") });
+        g.addEventListener("click",function(e){ var t=e.target;
+          if(t.classList.contains("pt")) bajarCurva(+t.dataset.a,+t.dataset.k);
+          else bajarCurva(+g.dataset.a, Math.max.apply(null,[].map.call(z.querySelectorAll('.pt[data-a="'+g.dataset.a+'"]'),function(x){return +x.dataset.k}))) });
+      });
+    }
+    pinta(); if(window.ResizeObserver) new ResizeObserver(pinta).observe(z);
+  })();
+
+  /* --- bajar al dato: cualquier cifra nueva abre su cálculo y la lista de diodos ---
+     Usa la ficha de siempre (abreCifra): cálculo, tabla, descarga y «ver en la tabla». */
+  var DV=D.dio.voc, DF=D.dio.filas, tx=function(v){return typeof v==="number"&&v<DV.length?DV[v]:(v==null?"":v)};
+  var CABL=["Diodo","Papel","Pieza de mano","Consola","Cliente","Salió al cliente","Cambiado el","Quién pagó","Origen"];
+  function filaL(r){ return [r[0],tx(r[2]),r[3],r[4],tx(r[5]),r[6],r[8]||"",tx(r[11]),tx(r[15])+" · "+tx(r[16])+" · fila "+r[17]] }
+  function lista(o, filas, ir){
+    o.tabla={titulo:o.titulo, cab:CABL, filas:filas.map(filaL)};
+    o.ir=ir||["v-uno","Ver en la tabla diodo a diodo"];
+    abreCifra(o);
+  }
+  window.bajarA=lista;
+  /* cascada */
+  (function(){
+    var C=D.cob, CAT={"Cambios trazados":Object.keys(C),"En garantía":["En garantía"],
+      "Cubiertos por mantenimiento":["Cubierto por mantenimiento"],"Sin coste":["Sin coste"],
+      "Ni garantía ni mantenimiento":["Facturado al cliente","Fuera de garantía, importe sin informar","Sin dato"],
+      "Facturados al cliente":["Facturado al cliente"],"Sin cerrar":["Fuera de garantía, importe sin informar","Sin dato"]};
+    [].forEach.call($("c-5").querySelectorAll(".r"),function(r){
+      var nm=r.querySelector(".nm").textContent, cats=CAT[nm]||[];
+      var of=cats.reduce(function(a,k){return a+(C[k]||0)},0);
+      var fs=DF.filter(function(x){return cats.indexOf(tx(x[11]))>=0});
+      r.onclick=function(){ lista({titulo:nm, valor:n(of)+" cambios",
+        que:r.title+" Recuento de cambios, sin importes.",
+        calculo:cats.map(function(k){return [k,n(C[k]||0)]}).concat([["Total",n(of),true],
+          ["Diodos de recambio con fila en DIODOS.xlsx",n(fs.length)]]),
+        fuentes:[["DIODOS.xlsx","hoja GENERAL · columna de quién paga"],["Jira LEAS","tickets de diodo"]],
+        accion: fs.length!==of ? "La lista trae "+n(fs.length)+" diodos y la cifra cuenta "+n(of)+" cambios: hay "+n(of-fs.length)+" cambios sin diodo de recambio en el fichero. Hay que mirar en el motor de dónde salen." : null}, fs, ["v-cobro","Ver quién pagó, en grande"]) };
+    });
+  })();
+  /* dónde están: cada categoría de la leyenda */
+  (function(){
+    [].forEach.call($("ls").children,function(d){
+      var cat=Object.keys(D.sit).filter(function(k){return d.textContent.indexOf(k)>=0})[0]; if(!cat) return;
+      d.style.cursor="pointer"; d.title="Ver los diodos";
+      d.onclick=function(){ var fs=DF.filter(function(x){return tx(x[13])===cat});
+        lista({titulo:cat, valor:n(D.sit[cat])+" diodos", que:"Diodos comprados que hoy están en esta situación.",
+          calculo:[["Diodos comprados",n(D.kpi.diodos)],[cat,n(D.sit[cat]),true],["% de los comprados",Math.round(100*D.sit[cat]/D.kpi.diodos)+" %"]],
+          fuentes:[["DIODOS.xlsx","hoja GENERAL"],["Listado Láseres.xlsx","parque"]]}, fs, ["v-censo","Ver dónde están, en grande"]) };
+    });
+  })();
+  /* curvas: cada punto */
+  window.bajarCurva=function(a,k){
+    var c=(D.edad||[]).filter(function(x){return x[0]===a})[0]; if(!c) return;
+    var dd=function(s){var t=Date.parse(String(s||"").slice(0,10));return isNaN(t)?null:t};
+    var fs=DF.filter(function(r){ var sa=dd(r[6]), su=dd(r[8]);
+      return r[7]===1 && sa && su && new Date(sa).getFullYear()===a && su>=sa && (su-sa)/864e5/365.25<=k+1 });
+    var eqs={}; fs.forEach(function(r){eqs[r[3]]=1}); var ne=Object.keys(eqs).length;
+    var ed=k===0?"el primer año":"los "+(k+1)+" primeros años";
+    lista({titulo:"Añada "+a+": averías en "+ed, valor:(100*c[2][k]/c[1]).toFixed(1).replace(".",",")+" %",
+      que:"Equipos que salieron en "+a+" y que rompieron al menos un diodo en "+ed+" en el cliente.",
+      calculo:[["Equipos de la añada",n(c[1])],["Rompieron al menos un diodo",n(c[2][k]),true],
+        ["% de la añada",(100*c[2][k]/c[1]).toFixed(1).replace(".",",")+" %"],["Cambios de diodo en ese plazo",n(c[3][k])],
+        ["% de la añada que ya ha cumplido esa edad",Math.round(100*c[4][k])+" %"]],
+      fuentes:[["DIODOS.xlsx","fecha de salida y fecha del cambio"],["Listado Láseres.xlsx","parque"]],
+      accion: ne===c[2][k] ? null : "La lista, hecha con la tabla de diodos de esta página, da "+n(ne)+" equipos; la cifra oficial del motor es "+n(c[2][k])+". La diferencia puede venir de las renumeraciones de piezas, que el motor fusiona: hay que confirmarlo en el motor."},
+      fs, ["v-edad","Ver la matriz por edad"]);
+  };
+  /* quién los gasta: cada cliente baja a su tabla de diodos */
+  (function(){
+    window.aCliente=aCliente;
+    function aCliente(nm){ abrir("v-uno"); var s=$("u-cli"); if(!s) return;
+      var o=[].filter.call(s.options,function(x){return x.value===nm||x.textContent.indexOf(nm)===0})[0];
+      if(o){ s.value=o.value; s.dispatchEvent(new Event("change")); s.dispatchEvent(new Event("input")) } }
+    [].forEach.call($("atz").children.length?$("atz").children:[],function(f){ var nm=f.querySelector(".nm"); if(!nm) return;
+      f.style.cursor="pointer"; f.onclick=function(){aCliente(nm.textContent)} });
+    [].forEach.call($("pc2").children,function(f){ var nm=f.querySelector(".nm"); if(!nm||f.onclick) return;
+      f.style.cursor="pointer"; f.onclick=function(){aCliente(nm.textContent)} });
+  })();
+  /* cambios por año: cada barra baja a su año (la página decía «pincha» y no hacía nada) */
+  (function(){
+    var bs=$("pm").children, tot=D.serie.reduce(function(a,s){return a+s[1]},0);
+    D.serie.forEach(function(s,i){ var b=bs[i]; if(!b) return;
+      b.tabIndex=0; b.setAttribute("role","button");
+      var fn=function(){
+        var y=String(s[0]), fs=DF.filter(function(r){return tx(r[2])==="cambio" && String(r[18]||"").slice(0,4)===y});
+        var prev=i?D.serie[i-1][1]:null, cob={};
+        fs.forEach(function(r){var k=tx(r[11])||"Sin dato"; cob[k]=(cob[k]||0)+1});
+        lista({titulo:"Cambios de diodo en "+y, valor:n(s[1])+" cambios",
+          que:"Cambios de diodo trazados con fecha en "+y+(y==="2026"?", hasta el "+$("c-fe").textContent+" (año sin cerrar)":"")+".",
+          calculo:[["Cambios en "+y, n(s[1]), true]]
+            .concat(prev!=null?[["Año anterior ("+D.serie[i-1][0]+")", n(prev)]]:[])
+            .concat([["Cambios de todos los años de la serie", n(tot)],["Diodos de recambio montados en "+y+" con fila en DIODOS.xlsx", n(fs.length)]])
+            .concat(Object.keys(cob).sort(function(a,b){return cob[b]-cob[a]}).map(function(k){return ["  de ellos: "+k, n(cob[k])]})),
+          fuentes:[["DIODOS.xlsx","hoja GENERAL · fecha de montaje del recambio"],["Jira LEAS","tickets de diodo"]],
+          accion: fs.length!==s[1] ? "La lista trae "+n(fs.length)+" diodos y la cifra oficial es "+n(s[1])+": la diferencia es de fechas (montaje del recambio frente a fecha del cambio) y hay que confirmarla en el motor." : null},
+          fs, ["v-cambios","Ver los cambios por año, en grande"]) };
+      b.onclick=fn; b.onkeydown=function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();fn()} };
+    });
+  })();
+  /* --- mapa de calor: cambios por cliente y año (D.coh, la misma base que «Por año natural») --- */
+  (function(){
+    var H=$("hm"), Y=D.cols, CO=D.coh.slice(1), anos=Y.map(String);
+    /* la página convierte la matriz a densa al arrancar ([añada][año]); se aceptan las dos formas */
+    var tots=CO.map(function(c){var t=Y.map(function(){return 0});
+      var densa=c[2].length && c[2][0].length===Y.length && c[2].length!==3;
+      c[2].forEach(function(x){ if(densa||x.length===Y.length){ x.forEach(function(v,j){t[j]+=v||0}) } else t[x[1]]+=x[2] }); return t});
+    var eqDe=function(c){return typeof c[3]==="number"?c[3]:(c[3]&&c[3][0])||c[1].reduce(function(a,b){return a+b},0)};
+    var orden=CO.map(function(c,i){return i}).sort(function(a,b){return tots[b].reduce(function(x,y){return x+y},0)-tots[a].reduce(function(x,y){return x+y},0)});
+    var desde=Y.findIndex(function(y,j){return CO.some(function(c,i){return tots[i][j]>0})}); if(desde<0) desde=0;
+    var col=function(v){return v===0?"transparent":v<=2?"var(--r1)":v<=5?"var(--r2)":v<=10?"var(--r3)":v<=20?"var(--r4)":"var(--r5)"};
+    var h='<table><thead><tr><th class="l">Cliente</th><th class="n">Equipos</th>';
+    for(var j=desde;j<Y.length;j++) h+='<th>'+("'"+String(Y[j]).slice(2))+'</th>';
+    h+='<th class="n">Total</th></tr></thead><tbody>';
+    orden.forEach(function(i){ var c=CO[i], t=tots[i], s=0;
+      h+='<tr><td class="l" title="'+c[0]+'">'+c[0]+'</td><td class="e">'+n(eqDe(c))+'</td>';
+      for(var j=desde;j<Y.length;j++){ s+=t[j];
+        h+='<td class="'+(t[j]?'v':'')+'" data-i="'+i+'" data-j="'+j+'" style="background:'+col(t[j])+(t[j]>10?';color:#fff':'')+'">'+(t[j]||'·')+'</td>' }
+      h+='<td class="t">'+n(s)+'</td></tr>' });
+    h+='</tbody></table><div class="pie">Cambios de diodo por año, de los equipos vendidos a cada cliente. Es la misma base que la matriz «Por año natural». '+(Y[Y.length-1]===2026?"2026 va hasta hoy. ":"")+'Pincha una celda.</div>';
+    H.innerHTML=h;
+    [].forEach.call(H.querySelectorAll("td.v"),function(td){ td.onclick=function(){
+      var c=CO[+td.dataset.i], y=String(Y[+td.dataset.j]), v=tots[+td.dataset.i][+td.dataset.j];
+      var fs=DF.filter(function(r){return tx(r[5])===c[0] && tx(r[2])==="cambio" && String(r[18]||"").slice(0,4)===y});
+      lista({titulo:c[0]+" · "+y, valor:n(v)+" cambios", que:"Cambios de diodo en "+y+" en los equipos vendidos a "+c[0]+".",
+        calculo:[["Cambios en "+y,n(v),true],["Cambios de todos los años",n(tots[+td.dataset.i].reduce(function(a,b){return a+b},0))],
+          ["Equipos del cliente",n(eqDe(c))],["Recambios montados en "+y+" con fila en DIODOS.xlsx",n(fs.length)]],
+        fuentes:[["DIODOS.xlsx","hoja GENERAL"],["Sales","ventas por cliente"]],
+        accion: fs.length!==v ? "La lista trae "+n(fs.length)+" diodos y la cifra oficial es "+n(v)+": la lista va por fecha de montaje del recambio y por el cliente escrito en la fila; la cifra, por el equipo vendido al cliente. Manda la cifra." : null},
+        fs, ["v-anadas","Ver la matriz por año natural"]) } });
+  })();
+
+  /* --- dispersión: tamaño del parque frente a tasa de cambio (D.an.tasa.doce) --- */
+  (function(){
+    var z=$("sct"), T=D.an.tasa, F2=T.doce;
+    window.aCliente=window.aCliente||function(){};
+    function pinta(){
+      var W=z.clientWidth, H=z.clientHeight; if(W<120||H<120) return;
+      var ml=34, mr=12, mt=12, mb=30;
+      var xm=Math.ceil(Math.max.apply(null,F2.map(function(f){return f[1]}))/100)*100;
+      var ym=Math.ceil(Math.max.apply(null,F2.map(function(f){return f[3]}))/2)*2||2;
+      var X=function(v){return ml+v/xm*(W-ml-mr)}, Yy=function(v){return mt+(1-v/ym)*(H-mt-mb)};
+      var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Equipos frente a cambios por 100 equipos">';
+      for(var v=0;v<=ym;v+=2) s+='<line class="ej" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Yy(v)+'" y2="'+Yy(v)+'"/><text class="et" x="'+(ml-5)+'" y="'+(Yy(v)+3)+'" text-anchor="end">'+v+'</text>';
+      for(var x=0;x<=xm;x+=100) s+='<text class="et" x="'+X(x)+'" y="'+(H-mb+14)+'" text-anchor="middle">'+x+'</text>';
+      s+='<text class="et" x="'+(W-mr)+'" y="'+(H-3)+'" text-anchor="end">equipos del cliente →</text>';
+      s+='<line class="md" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Yy(T.global)+'" y2="'+Yy(T.global)+'"/><text class="et" x="'+(W-mr)+'" y="'+(Yy(T.global)-4)+'" text-anchor="end" dy="-2">media '+String(T.global).replace(".",",")+'</text>'.replace('x="'+(W-mr)+'" y="'+(Yy(T.global)-4)+'" text-anchor="end"','x="'+(ml+4)+'" y="'+(Yy(T.global)-4)+'"');
+      var puestos=[], corto=function(s){ var m={"Sin Vello por Laser Low Cost SL":"Sin Vello","BR Esthetic / Brull":"BR Esthetic","Epil Point Italia":"Epil Point"}; return m[s]||s.split(" ")[0] };
+      F2.slice().sort(function(a,b){return b[2]-a[2]}).forEach(function(f){
+        var r=4+Math.sqrt(f[2])*3, cx=X(f[1]), cy=Yy(f[3]), cl=f[3]>T.global?"#C05621":"#00998A";
+        s+='<circle class="bb" data-n="'+f[0].replace(/"/g,"&quot;")+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+cl+'" stroke="'+cl+'"><title>'+f[0]+': '+n(f[1])+' equipos · '+n(f[2])+' cambios en 12 meses · '+String(f[3]).replace(".",",")+' por 100 equipos</title></circle>';
+        if(f[3]>T.global||f[1]>250){ var izq=cx>W*0.72 || puestos.some(function(p){return Math.abs(p[1]-cy)<13 && p[0]>cx-10 && !p[2]});
+          var ty=cy+3; puestos.forEach(function(p){ if(p[2]===izq && Math.abs(p[1]-ty)<12) ty=p[1]+(ty>=p[1]?12:-12) });
+          puestos.push([cx,ty,izq]);
+          s+='<text class="nb" x="'+(izq?cx-r-3:cx+r+3)+'" y="'+ty+'"'+(izq?' text-anchor="end"':'')+'>'+corto(f[0])+'</text>' }
+      });
+      s+='</svg>'; z.innerHTML=s;
+      [].forEach.call(z.querySelectorAll(".bb"),function(b){ b.onclick=function(){ window.aCliente(b.dataset.n) } });
+    }
+    if(window.ResizeObserver) new ResizeObserver(pinta).observe(z); window.addEventListener("resize",pinta);
+  })();
+  seg("c-7s",function(b){ ["cv","ed","an","di","hm"].forEach(function(k){$("c-7"+k).hidden=k!==b.dataset.k}); $("c-7i").dataset.v=b.dataset.v });
+  seg("c-8s",function(b){ $("c-5").hidden=b.dataset.k!=="5"; $("c-6").hidden=b.dataset.k!=="6"; $("c-8i").dataset.v=b.dataset.v });
+  $("c-pie").textContent="Fuentes: "+[].map.call($("ch").children,function(c){return c.textContent}).join(" · ")+
+    ". Todas las cifras se pinchan y enseñan su cálculo. Página pública: sin importes.";
+
+  [].forEach.call($("c-3s").children,function(b){b.onclick=function(){
+    [].forEach.call($("c-3s").children,function(x){x.classList.toggle("on",x===b)});
+    $("atz").hidden=b.dataset.k!=="t"; $("pc2").hidden=b.dataset.k!=="a"; $("sct").hidden=b.dataset.k!=="s"; window.dispatchEvent(new Event("resize")); }});
+
+  function grupoDe(v){ for(var i=0;i<G.length;i++) if(G[i].v.some(function(x){return x[0]===v})) return G[i]; return G[0] }
+  function abrir(v){
+    if(v in ALIAS) v=ALIAS[v];
+    if(!v){ cerrar(); return }
+    var g=grupoDe(v);
+    $("h-t").textContent=g.t;
+    var s=$("h-s"); s.textContent=""; s.hidden=g.v.length<2;
+    g.v.forEach(function(x){ var b=document.createElement("button"); b.type="button"; b.textContent=x[1];
+      if(x[0]===v) b.className="on"; b.onclick=function(){abrir(x[0])}; s.appendChild(b) });
+    [].forEach.call(lz.querySelectorAll("section"),function(e){e.classList.toggle("on",e.id===v)});
+    aCasa(v);
+    hoja.classList.add("on"); velo.classList.add("on"); hoja.setAttribute("aria-hidden","false");
+    try{location.hash=v}catch(e){}
+    window.dispatchEvent(new Event("vista")); window.dispatchEvent(new Event("resize"));
+  }
+  function cerrar(){
+    hoja.classList.remove("on"); velo.classList.remove("on"); hoja.setAttribute("aria-hidden","true");
+    aCasa(null); try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+    window.dispatchEvent(new Event("resize"));
+  }
+  /* los botones «Ver la tabla entera» de las fichas siguen funcionando */
+  window.ver=function(id){abrir(id)};
+  window.verBloque=function(b,v){abrir(v||"v-uno")};
+
+  [].forEach.call(cuadro.querySelectorAll(".ir"),function(b){b.onclick=function(){abrir(b.dataset.v)}});
+  $("c-nc").onclick=function(){abrir("v-calidad")};
+  $("c-todo").onclick=function(){abrir("v-uno")};
+  $("h-x").onclick=cerrar; velo.onclick=cerrar;
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&hoja.classList.contains("on")&&!$("md").open) cerrar() });
+  function busca(){ var q=$("c-q").value; abrir("v-uno"); var u=$("u-q"); u.value=q;
+    u.dispatchEvent(new Event("input")); setTimeout(function(){u.focus()},250) }
+  $("c-qb").onclick=busca;
+  $("c-q").addEventListener("keydown",function(e){ if(e.key==="Enter") busca() });
+  var h=(location.hash||"").slice(1);
+  if(h && lz.querySelector("section#"+CSS.escape(h))) abrir(h);
+  window.dispatchEvent(new Event("resize"));
+})();
+</script>
+</body></html>
